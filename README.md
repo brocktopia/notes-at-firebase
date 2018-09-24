@@ -99,6 +99,9 @@ test the waters. There are still a lot of Firebase features for me to explore.
 
 * Implement progressive web application features into the app.
 
+## Live Application
+The app is now live on Firebase here: [notes-at.firebaseapp.com](https://notes-at.firebaseapp.com)
+
 ## Author
 Brock Henderson [@brocktopia](https://github.com/brocktopia/) ||
 [brocktopia.com](https://brocktopia.com)
