@@ -67,9 +67,8 @@
 
     watch: {
       '$store.state.user.userAuthenticating': (val, oldVal) => {
-        console.log(`Notebooks.watch($store.state.user.userAuthenticating) val [${val}] oldVal [${oldVal}]`);
+        //console.log(`Notebooks.watch($store.state.user.userAuthenticating) val [${val}] oldVal [${oldVal}]`);
         if (!val && !!vm.$store.state.user.user.uid) {
-          console.log(`Notebooks.watch($store.state.user.userAuthenticating) user has authenticated`);
           vm.getNotebooks();
         }
       }
@@ -77,7 +76,7 @@
 
     mounted() {
       vm = this;
-      console.log(`Notebooks.mounted() authenticating ${vm.$store.state.user.userAuthenticating}`);
+      //console.log(`Notebooks.mounted()`);
       if (!vm.$store.state.user.userAuthenticating) {
         vm.getNotebooks();
       }
@@ -85,7 +84,7 @@
 
     methods:{
       getNotebooks() {
-        console.log('Notebooks.getNotebooks()');
+        //console.log('Notebooks.getNotebooks()');
         vm.isLoading = true;
         vm.$store.dispatch('notebooks/load')
           .then(function() {
@@ -99,8 +98,7 @@
           .catch(vm.handleError)
       },
       notebookSelect(notebook) {
-        console.log('Notebooks.notebookSelect() notebook');
-        console.dir(notebook);
+        //console.log('Notebooks.notebookSelect() notebook');
         vm.$router.push('/notebook/'+notebook._id);
       },
       addNotebook() {

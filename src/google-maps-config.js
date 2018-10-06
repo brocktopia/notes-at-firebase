@@ -1,6 +1,6 @@
 
-let config = {
-  key: 'YOUR-GOOGLE-API-KEY',
+const config = {
+  key: 'your-google-api-key',
   libraries: 'places'
 };
 

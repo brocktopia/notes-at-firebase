@@ -1,64 +1,65 @@
 <template>
-  <div>
+  <div class="app-container">
 
-    <div class="app-container" v-if="activeView === 'notebook'">
+    <header>
+      <h2>{{notebook.name}}</h2>
+      <span class="button-bar">
+        <button class="icon delete-notebook" @click="deleteNotebook()"><svg><use xlink:href="./dist/symbols.svg#delete-note"><title>Delete Notebook</title></use></svg></button>
+        <button class="icon edit-notebook" @click="editNotebook()"><svg><use xlink:href="./dist/symbols.svg#edit-note"><title>Edit Notebook</title></use></svg></button>
+        <button class="icon show-map" v-if="activeView === 'notebook'" @click="showMap()"><svg><use xlink:href="./dist/symbols.svg#map"><title>Show Map</title></use></svg></button>
+        <button class="icon show-list" v-if="activeView !== 'notebook'" @click="closeNotebookMap()"><svg><use xlink:href="./dist/symbols.svg#list"><title>Show Note List</title></use></svg></button>
+        <button class="desktop-only icon add-note" @click="addNote()"><svg><use xlink:href="./dist/symbols.svg#add-note"><title>Add New Note</title></use></svg></button>
+        <button class="mobile-only icon" @click="addNoteMobile()"><svg><use xlink:href="./dist/symbols.svg#add-note"><title>Add New Note</title></use></svg></button>
+      </span>
+    </header>
 
-      <header>
-        <h2>{{notebook.name}}</h2>
-        <span class="button-bar">
-          <button class="icon delete-notebook" @click="deleteNotebook()"><svg><use xlink:href="./dist/symbols.svg#delete-note"><title>Delete Notebook</title></use></svg></button>
-          <button class="icon edit-notebook" @click="editNotebook()"><svg><use xlink:href="./dist/symbols.svg#edit-note"><title>Edit Notebook</title></use></svg></button>
-          <button class="icon show-map" @click="showMap()"><svg><use xlink:href="./dist/symbols.svg#map"><title>Show Map</title></use></svg></button>
-          <button class="desktop-only icon add-note" @click="addNote()"><svg><use xlink:href="./dist/symbols.svg#add-note"><title>Add New Note</title></use></svg></button>
-          <button class="mobile-only icon" @click="addNoteMobile()"><svg><use xlink:href="./dist/symbols.svg#add-note"><title>Add New Note</title></use></svg></button>
-        </span>
-      </header>
+    <div v-if="activeView === 'notebook'" class="content">
+      <ul class="notebook">
 
-      <div class="content">
-        <ul class="notebook">
+        <li
+          v-for="note in notes"
+          :key="note._id"
+          class="note-item"
+          @click="noteSelect(note)"
+        >
+          <span class="title">{{note.name}}</span><br/>
+          <span class="date">{{$moment(note.Created_date.toDate()).format('ddd l h:mm:ss a')}}</span>
+          <span v-if="!note.place || !note.place.name" class="geocoords">
+            <svg class="icon-tiny location-icon"><use xlink:href="./dist/symbols.svg#my-location"></use></svg>
+            {{(note.geocode.latitude ? note.geocode.latitude.toFixed(5) : 'Unknown') + ', ' + (note.geocode.longitude ? note.geocode.longitude.toFixed(5) : 'Unknown')}}
+          </span>
+          <span v-if="note.place && note.place.name" class="place">
+            <svg class="icon-tiny place-icon"><use xlink:href="./dist/symbols.svg#place"></use></svg>
+            {{note.place.name}}
+          </span>
+          <br clear="all"/>
+          <span class="note">{{(note.note && note.note.length > 84) ? note.note.substr(0,84) + '...' : note.note}}</span>
+        </li>
 
-          <li
-            v-for="note in notes"
-            :key="note._id"
-            class="note-item"
-            @click="noteSelect(note)"
-          >
-            <span class="title">{{note.name}}</span><br/>
-            <span class="date">{{$moment(note.Created_date.toDate()).format('ddd l h:mm:ss a')}}</span>
-            <span v-if="!note.place || !note.place.name" class="geocoords">
-              <svg class="icon-tiny location-icon"><use xlink:href="./dist/symbols.svg#my-location"></use></svg>
-              {{(note.geocode.latitude ? note.geocode.latitude.toFixed(5) : 'Unknown') + ', ' + (note.geocode.longitude ? note.geocode.longitude.toFixed(5) : 'Unknown')}}
-            </span>
-            <span v-if="note.place && note.place.name" class="place">
-              <svg class="icon-tiny place-icon"><use xlink:href="./dist/symbols.svg#place"></use></svg>
-              {{note.place.name}}
-            </span>
-            <br clear="all"/>
-            <span class="note">{{(note.note && note.note.length > 84) ? note.note.substr(0,84) + '...' : note.note}}</span>
-          </li>
-
-        </ul>
-        <div v-if="notes.length === 0" class="notebook-message">No notes in this notebook.</div>
-      </div>
-
-      <div class="navigation">
-        <router-link to="/">Home</router-link>
-        <router-link class="notebooks-link" to="/notebooks">Notebooks</router-link>
-      </div>
-
+      </ul>
+      <div v-if="notes.length === 0" class="notebook-message">No notes in this notebook.</div>
     </div>
 
-    <notebook-map
-      v-if="activeView === 'map'"
-      :name="notebook.name"
-      :notes="notes"
-      v-on:close="closeNotebookMap"
-      v-on:edit="editNotebook"
-      v-on:delete="deleteNotebook"
-      v-on:addNote="addNote"
-      v-on:addNoteMobile="addNoteMobile"
-      v-on:select="noteSelect"
-    ></notebook-map>
+    <keep-alive>
+      <!-- keep-alive only works when toggling the view inside the Notebook view.
+           Navigating to a Note view and back will reset the map position        -->
+      <notebook-map
+        v-if="activeView === 'map'"
+        :name="notebook.name"
+        :notes="notes"
+        v-on:close="closeNotebookMap"
+        v-on:edit="editNotebook"
+        v-on:delete="deleteNotebook"
+        v-on:addNote="addNote"
+        v-on:addNoteMobile="addNoteMobile"
+        v-on:select="noteSelect"
+      ></notebook-map>
+    </keep-alive>
+
+    <div class="navigation">
+      <router-link to="/">Home</router-link>
+      <router-link class="notebooks-link" to="/notebooks">Notebooks</router-link>
+    </div>
 
     <edit-notebook-dialog
       v-if="showEditNotebook"

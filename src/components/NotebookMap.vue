@@ -1,15 +1,4 @@
 <template>
-  <div class="app-container">
-
-    <header>
-      <h2>{{name}}</h2>
-      <span class="button-bar">
-          <svg class="icon" @click="$emit('delete')"><use xlink:href="./dist/symbols.svg#delete-note"></use></svg>
-          <svg class="icon" @click="$emit('edit')"><use xlink:href="./dist/symbols.svg#edit-note"><title>Edit Notebook</title></use></svg>
-          <svg class="icon" @click="$emit('close')"><use xlink:href="./dist/symbols.svg#list"></use></svg>
-          <svg class="icon" @click="$emit('addNote')"><use xlink:href="./dist/symbols.svg#add-note"></use></svg>
-        </span>
-    </header>
 
     <div class="content">
       <gmap-map
@@ -56,12 +45,6 @@
       </gmap-map>
     </div>
 
-    <div class="navigation">
-      <router-link to="/">Home</router-link>
-      <router-link to="/notebooks">Notebooks</router-link>
-    </div>
-
-  </div>
 </template>
 
 <script>
