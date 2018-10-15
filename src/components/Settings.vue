@@ -12,6 +12,7 @@
 
     <div class="content settings-edit">
       <span class="app-version">v.{{$version}}</span>
+
       <h3>User Profile</h3>
       <div class="form-field">
         <label for="displayName">Display Name</label>
@@ -42,15 +43,15 @@
       <hr>
       <h3>Update Password</h3>
       <div class="form-field">
-        <label for="currentPassword">Current Password</label>
+        <label for="currentPassword">Current</label>
         <input type="password" id="currentPassword" v-model="userPass.currentPassword" placeholder="Current Password">
       </div>
       <div class="form-field">
-        <label for="newPassword">New Password</label>
+        <label for="newPassword">New</label>
         <input type="password" id="newPassword" v-model="userPass.newPassword" placeholder="New Password">
       </div>
       <div class="form-field">
-        <label for="confirmPassword">Confirm Password</label>
+        <label for="confirmPassword">Confirm</label>
         <input type="password" :class="passwordValid ? 'valid' : 'invalid'" id="confirmPassword" v-model="userPass.confirmPassword" placeholder="Confirm Password">
       </div>
       <button class="single-large" @click="updatePassword">Update Your Password</button>

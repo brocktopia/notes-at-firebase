@@ -63,9 +63,6 @@
 </script>
 
 <style scoped>
-  .modal-mask .modal-container {
-    width: 450px;
-  }
   .input-info {
     font-size: smaller;
   }

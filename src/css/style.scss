@@ -124,7 +124,8 @@ h2.warn {
     input:not([type=button]), textarea {
       padding-left: 5px;
       //text-size-adjust: 150%;
-      font-size: 1rem;
+      font-size: 1.8rem;
+      min-width: 300px;
       //line-height: 30px;
     }
     header {
@@ -194,6 +195,23 @@ h2.warn {
     }
     &.edit {
       font-size: 1.5rem;
+    }
+  }
+  // mobile modal dialogs
+  div.modal-mask {
+    div.modal-wrapper {
+      display: block;
+      margin: 70px 0 0;
+    }
+    div.modal-container {
+      width: 100%;
+      margin: 0;
+      input {
+        font-size: 1.8rem;
+      }
+      span.input-info {
+        font-size: unset;
+      }
     }
   }
 }

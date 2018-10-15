@@ -121,6 +121,8 @@
       // Get google reference
       vm.$gmapApiPromiseLazy().then((google) => {
         vm.google = google;
+        console.log('NotebookMap.mounted() google maps reference');
+        console.dir(google.maps);
       });
       // create marker objects from notes
       vm.notes.forEach(function(note) {
