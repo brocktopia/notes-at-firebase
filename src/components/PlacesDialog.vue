@@ -13,7 +13,7 @@
           <input v-model="placeName" placeholder="Enter a place name" @input="updatePlaceSearch(placeName)">
           <ul class="place-list">
             <li class="place" v-for="place in places" v-on:click="$emit('select', place)">
-              <img :src="place.icon" width="25" height="25"/>
+              <img :src="place.icon" />
               <span class="place-name">{{place.name}}</span>
               <!-- The place-type value can get really long
               <span v-if="place.types" class="place-type">({{place.types[0]}})</span>
@@ -43,10 +43,12 @@
 
   module.exports = {
 
-    data: function() {return {
-      placeName:'',
-      interval:null
-    }},
+    data: function() {
+      return {
+        placeName:'',
+        interval:null
+      }
+    },
 
     props:{
       places:Array,
@@ -64,16 +66,17 @@
           clearTimeout(vm.interval);
         }
         vm.interval = setTimeout(() => {
+          //console.log('PlacesDialog.updatePlaceSearch() emit place event');
           vm.$emit('place', placeName);
           vm.interval = false;
-        }, 200);
+        }, 500);
       }
     }
 
   };
 </script>
 
-<style scoped>
+<style lang="scss" scoped>
   input {
     width: 100%;
   }
@@ -95,9 +98,38 @@
   }
   li.place img {
     vertical-align: middle;
+    width: 25px;
+    height: 25px;
   }
-  .modal-mask .modal-container {
-    width: 460px;
-    max-height: 720px;
+  /* Mobile rules */
+  @media only screen and (min-device-width : 320px) and (max-device-width : 480px) {
+    .modal-mask .modal-container {
+      position: relative;
+      width: 100%;
+      height: calc(100vh - 140px);
+      ul.place-list {
+        max-height: calc(100vh - 320px);
+        li.place {
+          font-size: 1.2rem;
+          height: 45px;
+          img {
+            width: 40px;
+            height: 40px;
+          }
+        }
+      }
+    }
+    .modal-footer {
+      position: absolute;
+      bottom: 5px;
+      width: calc(100vw - 60px);
+    }
+  }
+  /* Non-mobile rules */
+  @media screen and (min-width: 800px) {
+    .modal-mask .modal-container {
+      width: 460px;
+      max-height: 720px;
+    }
   }
 </style>

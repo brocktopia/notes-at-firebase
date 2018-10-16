@@ -151,7 +151,7 @@ const router = new VueRouter({
     }
     // NoteEditMobile Component
     ,{
-      path:'/note-edit-mobile/:notebook_id',
+      path:'/note-edit-mobile/:note_id',
       name:'note-edit-mobile',
       component: NoteEditMobile,
       meta: {

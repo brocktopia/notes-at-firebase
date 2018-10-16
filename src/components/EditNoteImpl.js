@@ -32,17 +32,21 @@ export default {
   },
 
   computed: {
+
     location: function() {
       return { lat: vm.note.geocode.latitude, lng: vm.note.geocode.longitude }
     },
+
     geoLat: function() {
       if (!this.note) return 0;
       return this.note.geocode.latitude || 0;
     },
+
     geoLon: function() {
       if (!this.note) return 0;
       return this.note.geocode.longitude || 0;
     },
+
     // Setup getters from store
     ...mapGetters('notes', ['activeNote','notebookNoteCount'])
   },
@@ -67,8 +71,10 @@ export default {
   mounted() {
     //console.log(`EditNoteImpl.mounted()`);
     vm = this;
+    // make sure user isn't being authenticated
     if (!vm.$store.state.user.userAuthenticating) {
       vm.initNote();
+      // Authentication watcher above will trigger init
     }
     // get google reference
     vm.$gmapApiPromiseLazy().then((google) => {
@@ -81,6 +87,7 @@ export default {
   },
 
   methods:{
+
     initNote() {
       //console.log(`EditNoteImpl.initNote()`);
       // Check route to determine if note is new
@@ -89,6 +96,7 @@ export default {
       } else {
         vm.mode = 'edit'
       }
+      //console.log(`EditNoteImpl.initNote() mode: ${vm.mode}`);
       // Check for deep-linking
       if (vm.mode === 'new') {
         if (!vm.activeNote.notebook) { // Deep-linked note-new
@@ -106,7 +114,7 @@ export default {
         }
       } else if (vm.mode === 'edit') {
         if (!vm.activeNote._id) { // Deep-linked note-edit
-          //console.log(`EditNoteImpl.initNote() deep-linked`);
+          //console.log(`EditNoteImpl.initNote() deep-linked note_id [${vm.$route.params.note_id}]`);
           vm.$store.dispatch('notes/getNote', vm.$route.params.note_id)
             .then(function() {
               // copy data from activeNote
@@ -129,6 +137,7 @@ export default {
         vm.updateCoordinates();
       }
     },
+
     updateCoordinates() {
       //console.log(`EditNoteImpl.updateCoordinates()`);
       navigator.geolocation.getCurrentPosition(
@@ -139,6 +148,8 @@ export default {
             longitude: position.coords.longitude
           };
           vm.note.geocode = latlonObj;
+          // clear any loaded places
+          vm.places = [];
         },
         function(err) {
           console.warn(`EditNoteImpl.updateCoordinates() ERROR(${err.code}): ${err.message}`);
@@ -148,6 +159,7 @@ export default {
         }
       );
     },
+
     saveNote() {
       //console.log(`EditNoteImpl.saveNote()`);
       //vm.$emit('save', vm.note);
@@ -173,6 +185,7 @@ export default {
           .catch(vm.handleError);
       }
     },
+
     closeNote() {
       //console.log(`EditNoteImpl.closeNote() closeRoute [${closeRoute}]`);
       if (closeRoute) {
@@ -181,9 +194,11 @@ export default {
         vm.$router.push('/notebook/' + vm.activeNote.notebook);
       }
     },
+
     hasPlace(note) { // this should probably be a computed property
       return !!(note.place && note.place.name)
     },
+
     findPlace(placeName) {
       //console.log(`EditNoteImpl.findPlace()`);
       let options = {
@@ -209,12 +224,14 @@ export default {
         }
       });
     },
+
     moreSelected() {
       //console.log(`EditNoteImpl.moreSelected()`);
       if (vm.pagination) {
         vm.pagination.nextPage();
       }
     },
+
     mapMarkerMoved(marker) {
       //console.log(`EditNoteImpl.mapMarkerMoved()`);
       let latlonObj = {
@@ -222,11 +239,15 @@ export default {
         longitude: marker.latLng.lng()
       };
       vm.note.geocode = latlonObj;
+      // clear any loaded places
+      vm.places = [];
     },
+
     placesClose() {
       //console.log(`EditNoteImpl.placesClose()`);
       vm.showPlacesDialog = false;
     },
+
     placeSelected(place) {
       //console.log(`EditNoteImpl.placeSelected()`);
       let options = {
@@ -252,16 +273,21 @@ export default {
         }
       });
     },
+
     placeInputUpdated(placeName) {
-      //console.log(`EditNoteImpl.placeInputUpdated()`);
-      vm.findPlace(placeName)
+      //console.log(`EditNoteImpl.placeInputUpdated() ${placeName}`);
+      // clear current results
+      vm.places = [];
+      vm.findPlace(placeName);
     },
+
     clearPlace() {
       //console.log(`EditNoteImpl.clearPlace()`);
       vm.$delete(vm.note, 'place');
       // needs to be empty object to save
       vm.note.place = {};
     },
+
     handleError(err) {
       console.warn(`Note.handleError()`);
       console.dir(err);
@@ -272,5 +298,6 @@ export default {
         vm.showMessage = true;
       }
     }
+
   }
 }
