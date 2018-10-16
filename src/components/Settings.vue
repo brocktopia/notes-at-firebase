@@ -1,14 +1,14 @@
 <template>
   <div class="app-container edit">
 
-    <header>
+    <nav class="head">
       <h2>Settings</h2>
       <span class="button-bar">
         <button class="icon action-icon" @click="closeSettings()"><svg><use xlink:href="./dist/symbols.svg#close-note">
           <title>Close Settings</title>
         </use></svg></button>
       </span>
-    </header>
+    </nav>
 
     <div class="content settings-edit">
       <span class="app-version">v.{{$version}}</span>
