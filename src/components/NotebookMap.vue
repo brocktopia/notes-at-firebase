@@ -13,9 +13,9 @@
           :opened="infoWinOpen"
           @closeclick="infoWinOpen=false"
         >
-          <div class="note-info">
+          <div class="note-info" v-if="!!infoMarker.note">
             <h3>{{infoMarker.note.name}}</h3>
-            <div>{{$moment(infoMarker.note.Created_date).format('l h:mm:ss a')}}</div>
+            <div>{{$moment(infoMarker.date).format('l h:mm:ss a')}}</div>
             <div v-if="infoMarker.hasPlace">
               <img :src="infoMarker.note.place.icon" width="24" height="24"/>
               <span>{{infoMarker.note.place.name}}</span>
@@ -130,6 +130,7 @@
           note: note,
           title: note.name,
           key: note._id,
+          date: note.Created_date.toDate(),
           position: {'lat': note.geocode.latitude, 'lng': note.geocode.longitude}
         };
         if (note.place && note.place.name) {
