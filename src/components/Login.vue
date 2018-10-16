@@ -1,9 +1,9 @@
 <template>
   <div class="app-container">
 
-    <header>
+    <nav class="head">
       <h2>Sign In</h2>
-    </header>
+    </nav>
 
     <div class="content">
       <img class="logo" src="../assets/logo.png" width="180" height="40" />
