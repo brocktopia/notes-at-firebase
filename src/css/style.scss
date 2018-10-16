@@ -36,8 +36,17 @@ a, .link {
   height: 100%;
   display: grid;
   grid-template-rows: 50px auto 50px;
-  max-width: 768px;
+  max-width: 640px;
   margin: 0 auto;
+  .content {
+    height: calc(100vh - 100px);
+  }
+  &.grid-rows-4 {
+    grid-template-rows: 50px 40px auto 50px;
+    .content {
+      height: calc(100vh - 140px);
+    }
+  }
 }
 input {
   min-width: 200px;
@@ -46,7 +55,20 @@ input, textarea, img {
   max-width:100%
 }
 /* header styles */
-header {
+header.main {
+  height: 40px;
+  padding: 0 10px;
+  background-color: #fff;
+  h2 {
+    margin: 0;
+    line-height: 40px;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+  }
+}
+/* head nav styles */
+nav.head {
   background-color: #ffa22f;
   margin: 0;
   height: 100%;
@@ -62,13 +84,13 @@ header {
   }
   h2 {
     font-size: 1.3rem;
-    line-height: 50px;
     max-width: 400px;
     overflow: hidden;
     white-space: nowrap;
     text-overflow: ellipsis;
     float: left;
   }
+  // do I still need this?
   label {
     font-size: 1.2rem;
   }
@@ -96,141 +118,11 @@ button.icon {
 h2.warn {
   color: orangered;
 }
-/* Mobile fixes */
-@media only screen and (min-device-width : 320px) and (max-device-width : 480px) {
-  .desktop-only {
-    display: none;
-  }
-  svg.icon-tiny, img.icon-tiny {
-    display: inline-block;
-    width: 32px;
-    height: 32px;
-  }
-  svg.icon-small, img.icon-small {
-    display: inline-block;
-    width: 36px;
-    height: 36px;
-  }
-  button:not(.icon) {
-    white-space: nowrap !important;
-    font-size: 1.2rem !important;
-    padding: 0.5rem 1rem !important;
-    &.single-large {
-      font-size: 1.5rem !important;
-    }
-  }
-  .app-container {
-    max-width: 100%;
-    grid-template-rows: 70px auto 70px;
-    input:not([type=button]), textarea {
-      padding-left: 5px;
-      //text-size-adjust: 150%;
-      font-size: 1.8rem;
-      min-width: 300px;
-      //line-height: 30px;
-    }
-    header {
-      h2 {
-        line-height: 70px;
-        font-size: 2rem;
-        max-width: 480px;
-        margin-left: 10px;
-        float: left;
-      }
-      .button-bar {
-        .icon {
-          margin: 10px 4px;
-        }
-      }
-    }
-    .navigation {
-      line-height: 70px;
-      font-size: 1.7rem;
-    }
-    .content {
-      height: calc(100vh - 140px);
-      font-size: 1.5rem;
-      ul .list-item {
-        height: 60px;
-        line-height: 60px;
-        font-size: 1.5rem;
-      }
-      .list-item-name {
-        max-width: 75%;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        white-space: nowrap;
-      }
-      &.note-edit {
-        //text-size-adjust: 130%;
-      }
-      .note-item {
-        font-size: 1.5rem;
-        .title {
-          //text-size-adjust: 150%;
-          line-height: 1.8rem;
-        }
-        .date, .note {
-          //text-size-adjust: 140%;
-          white-space: nowrap;
-        }
-        .geocoords, .place {
-          //text-size-adjust: 130%;
-          width: 50%
-        }
-      }
-      .notebook-message {
-        //text-size-adjust: 150%;
-      }
-      &.note-edit {
-        grid-template-rows: 75px 30px 35px 35px 155px auto;
-        .name {
-          label {
-            display: block;
-          }
-        }
-      }
-    }
-    .modal-header h3 {
-      //text-size-adjust: 150%;
-    }
-    &.edit {
-      font-size: 1.5rem;
-    }
-  }
-  // mobile modal dialogs
-  div.modal-mask {
-    div.modal-wrapper {
-      display: block;
-      margin: 70px 0 0;
-    }
-    div.modal-container {
-      width: 100%;
-      margin: 0;
-      input {
-        font-size: 1.8rem;
-      }
-      span.input-info {
-        font-size: unset;
-      }
-    }
-  }
-}
-/* Non-mobile rules */
-@media screen and (min-width: 800px) {
-  .mobile-only {
-    display: none;
-  }
-  input {
-    font-size: 1rem;
-    line-height: 22px;
-    padding: 0 5px;
-    font-family: monospace;
-  }
-  textarea {
-    font-size: 1rem;
-    padding: 5px 5px;
-  }
+/* Content Styles */
+.content {
+  background-color: #fff;
+  overflow: auto;
+  clear: both;
 }
 /* icons */
 .icon {
@@ -254,13 +146,7 @@ h2.warn {
 .action-icon {
   float: right;
 }
-/* Content Styles */
-.content {
-  height: calc(100vh - 100px);
-  background-color: #fff;
-  overflow: auto;
-  clear: both;
-}
+/* Message styles */
 .loading-message {
   margin: 20px auto;
   padding: 0 20px;
@@ -279,7 +165,7 @@ h2.warn {
 .loading-mask span {
   display: table-cell;
   vertical-align: middle;
-  width: 768px;
+  width: 640px;
   text-align: center;
   margin: 0px auto;
   color: #888888;
@@ -293,17 +179,32 @@ h2.warn {
   text-align: left;
   padding: 0 10px;
   line-height: 50px;
+  .icon-button-bar {
+    float: right;
+    display: inline-block;
+    height: 100%;
+    a {
+      width: 50px;
+      height: 50px;
+      border: #42b983;
+      svg {
+        width: 50px;
+        height: 50px;
+      }
+    }
+  }
 }
-.navigation * {
+.navigation > a {
   margin: 0 10px;
   cursor: pointer;
+  text-decoration: none;
 }
 .action-link {
   float: right;
   margin-right: 10px;
 }
 /* Button Styles */
-button {
+button:not(.icon) {
   display: inline-block;
   border: none;
   padding: 0.5rem 0.5rem;
@@ -393,5 +294,159 @@ button:active {
       -webkit-transform: scale(1.1);
       transform: scale(1.1);
     }
+  }
+}
+/* Mobile fixes */
+@media only screen and (min-device-width : 320px) and (max-device-width : 480px) {
+  .desktop-only {
+    display: none !important;
+  }
+  svg.icon-tiny, img.icon-tiny {
+    display: inline-block;
+    width: 32px;
+    height: 32px;
+  }
+  svg.icon-small, img.icon-small {
+    display: inline-block;
+    width: 36px;
+    height: 36px;
+  }
+  button:not(.icon, .gm-control-active) {
+    white-space: nowrap !important;
+    font-size: 1.2rem !important;
+    padding: 0.5rem 1rem !important;
+    &.single-large {
+      font-size: 1.5rem !important;
+    }
+  }
+  .app-container {
+    grid-template-rows: 60px auto 60px;
+    max-width: 100%;
+    .content {
+      height: calc(100vh - 120px);
+    }
+    &.grid-rows-4 {
+      grid-template-rows: 60px 50px auto 60px;
+      .content {
+        height: calc(100vh - 170px);
+      }
+    }
+    input:not([type=button]), textarea {
+      padding-left: 5px;
+      //text-size-adjust: 150%;
+      font-size: 1.8rem;
+      min-width: 300px;
+      //line-height: 30px;
+    }
+    nav.head {
+      h2 {
+        line-height: 60px;
+        font-size: 1.8rem;
+        max-width: 480px;
+        margin-left: 10px;
+        float: left;
+      }
+      .button-bar {
+        .icon {
+          margin: 5px 4px;
+        }
+      }
+    }
+    header.main {
+      height: 50px;
+      h2 {
+        line-height: 50px;
+        font-size: 2rem;
+      }
+    }
+    .navigation {
+      line-height: 60px;
+      font-size: 1.7rem;
+      .icon-button-bar {
+        padding: 5px 0;
+      }
+    }
+    .content {
+      font-size: 1.5rem;
+      ul .list-item {
+        height: 60px;
+        line-height: 60px;
+        font-size: 1.5rem;
+      }
+      .list-item-name {
+        max-width: 75%;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+      &.note-edit {
+        //text-size-adjust: 130%;
+      }
+      .note-item {
+        font-size: 1.5rem;
+        .title {
+          //text-size-adjust: 150%;
+          line-height: 1.8rem;
+        }
+        .date, .note {
+          //text-size-adjust: 140%;
+          white-space: nowrap;
+        }
+        .geocoords, .place {
+          //text-size-adjust: 130%;
+          width: 50%
+        }
+      }
+      .notebook-message {
+        //text-size-adjust: 150%;
+      }
+      &.note-edit {
+        grid-template-rows: 75px 30px 35px 35px 155px auto;
+        .name {
+          label {
+            display: block;
+          }
+        }
+      }
+    }
+    .modal-header h3 {
+      //text-size-adjust: 150%;
+    }
+    &.edit {
+      font-size: 1.5rem;
+    }
+  }
+  // mobile modal dialogs
+  div.modal-mask {
+    div.modal-wrapper {
+      display: block;
+      margin: 70px 0 0;
+    }
+    div.modal-container {
+      width: 100%;
+      margin: 0;
+      input {
+        font-size: 1.8rem;
+      }
+      span.input-info {
+        font-size: unset;
+      }
+    }
+  }
+}
+/* Non-mobile rules */
+@media screen and (min-width: 800px) {
+  .mobile-only {
+    display: none !important;
+  }
+  input {
+    font-size: 1rem;
+    line-height: 22px;
+    padding: 0 5px;
+    font-family: monospace;
+  }
+  textarea {
+    font-size: 1rem;
+    padding: 5px 5px;
   }
 }

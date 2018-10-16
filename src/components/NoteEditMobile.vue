@@ -2,16 +2,16 @@
   <div>
 
     <!-- Name, Date & Map settings -->
-    <div :class="'app-container' + (mode === 'new' ? ' new' : ' edit')" v-if="activeView === 'edit-name'">
+    <div :class="'app-container' + (mode === 'new' ? ' new-note' : ' edit-note')" v-if="activeView === 'edit-name'">
 
-      <header>
-        <h2>{{mode === 'edit' ? note.name : 'New Note'}}</h2>
+      <nav class="head">
+        <h2>{{mode === 'edit' ? 'Note - Edit' : 'Note - Create'}}</h2>
         <span class="button-bar">
           <button class="icon" @click="activeView = 'edit-note'"><svg><use xlink:href="./dist/symbols.svg#arrow-forward">
             <title>Next</title>
           </use></svg></button>
         </span>
-      </header>
+      </nav>
 
       <div class="content name-edit">
 
@@ -65,10 +65,10 @@
     </div>
 
     <!-- Note input -->
-    <div class="app-container" v-if="activeView === 'edit-note'">
+    <div :class="'app-container' + (mode === 'new' ? ' new-note' : ' edit-note')" v-if="activeView === 'edit-note'">
 
-      <header>
-        <h2>{{mode === 'edit' ? note.name : 'New Note'}}</h2>
+      <nav class="head">
+        <h2>{{mode === 'edit' ? 'Note - Edit' : 'Note - Create'}}</h2>
         <span class="button-bar">
           <button class="icon" @click="activeView = 'edit-name'"><svg><use xlink:href="./dist/symbols.svg#arrow-back">
             <title>Back</title>
@@ -77,7 +77,7 @@
             <title>Save Note</title>
           </use></svg></button>
         </span>
-      </header>
+      </nav>
 
       <div class="content note-edit">
         <textarea id="noteNote" v-model="note.note" placeholder="Your note"></textarea>
@@ -129,11 +129,11 @@
 </script>
 
 <style scoped>
-  .app-container.edit .name-edit {
+  .app-container.edit-note .name-edit {
     display: grid;
     grid-template-rows: 120px 40px 60px 60px auto;
   }
-  .app-container.new .name-edit {
+  .app-container.new-note .name-edit {
     display: grid;
     grid-template-rows: 90px 40px 60px 60px auto;
   }

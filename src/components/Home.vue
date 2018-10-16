@@ -1,7 +1,7 @@
 <template>
   <div class="app-container">
 
-    <header>
+    <nav class="head">
       <h2>Home</h2>
       <span class="button-bar">
         <button class="icon sign-out" @click="signOut()"><svg><use xlink:href="./dist/symbols.svg#logout">
@@ -11,7 +11,7 @@
           <title>Settings</title>
         </use></svg></button>
       </span>
-    </header>
+    </nav>
 
     <div class="content">
       <img class="logo" src="../assets/logo.png" width="180" height="40" />

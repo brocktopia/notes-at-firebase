@@ -1,8 +1,8 @@
 <template>
   <div class="app-container edit">
 
-    <header>
-      <h2>{{mode === 'edit' ? note.name : 'New Note'}}</h2>
+    <nav class="head">
+      <h2>{{mode === 'edit' ? 'Note - Edit' : 'Note - Create'}}</h2>
       <span class="button-bar">
         <button class="icon action-icon" @click="closeNote()"><svg><use xlink:href="./dist/symbols.svg#close-note">
           <title>Cancel Edit</title>
@@ -11,7 +11,7 @@
           <title>Save Note</title>
         </use></svg></button>
       </span>
-    </header>
+    </nav>
 
     <div class="content note-edit">
 

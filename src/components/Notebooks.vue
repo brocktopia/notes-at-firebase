@@ -1,12 +1,12 @@
 <template>
   <div class="app-container">
 
-    <header>
+    <nav class="head">
       <h2>Notebooks</h2>
       <span class="button-bar">
         <button class="icon add-notebook" @click="addNotebook()"><svg><use xlink:href="./dist/symbols.svg#add-item"><title>Add New Notebook</title></use></svg></button>
       </span>
-    </header>
+    </nav>
 
     <div class="content">
       <ul class="notebooks">

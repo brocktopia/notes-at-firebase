@@ -1,8 +1,8 @@
 <template>
-  <div class="app-container">
+  <div class="app-container grid-rows-4">
 
-    <header>
-      <h2>{{note.name}}</h2>
+    <nav class="head">
+      <h2>Note</h2>
       <span class="button-bar">
         <button class="icon delete-note" @click="deleteNote()"><svg><use xlink:href="./dist/symbols.svg#delete-note">
           <title>Delete Note</title>
@@ -23,6 +23,10 @@
           <title>Close Note</title>
         </use></svg></button>
       </span>
+    </nav>
+
+    <header class="main">
+      <h2>{{note.name}}</h2>
     </header>
 
     <div v-if="!showNoteMap" class="content">
@@ -80,9 +84,23 @@
     </gmap-map>
 
     <div class="navigation">
-      <a @click="closeNote()" class="back2notebook">Back to Notebook</a>
-      <a v-if="notebookNoteCount > 1" style="float:right;" @click="nextNote()">Next &gt;</a>
-      <a v-if="notebookNoteCount > 1" style="float:right;" @click="previousNote()">&lt; Previous</a>
+      <router-link to="/">Home</router-link>
+      &middot;
+      <router-link class="notebooks-link" to="/notebooks">Notebooks</router-link>
+      &middot;
+      <a @click="closeNote()" class="back2notebook">Notebook</a>
+      <span v-if="notebookNoteCount > 1" class="icon-button-bar">
+        <a @click="previousNote()">
+          <svg><use xlink:href="./dist/symbols.svg#arrow-back">
+            <title>Previous Note</title>
+          </use></svg>
+        </a>
+        <a @click="nextNote()">
+          <svg><use xlink:href="./dist/symbols.svg#arrow-forward">
+            <title>Next Note</title>
+          </use></svg>
+        </a>
+      </span>
     </div>
 
     <!-- Dynamically loaded content -->
@@ -161,7 +179,13 @@
 
     watch: {
       $route(toRoute, fromRoute) {
-        //console.log('Note.watch.$route() toRoute [' + toRoute.name + '] fromRoute [' + fromRoute.name + '] path [' + toRoute.path + ']');
+        //console.log(`Note.watch.$route() toRoute [${toRoute.name}] fromRoute [${fromRoute.name}] path [${toRoute.path}] note_id [${toRoute.params.note_id}]`);
+        // watch for id changes
+        if ((vm.note && toRoute.params.note_id) && vm.note._id !== toRoute.params.note_id) {
+          // handle browser navigation
+          vm.$store.dispatch('notes/setActiveNote', toRoute.params.note_id);
+        }
+        // watch for map toggle
         if (toRoute.name === 'note-map') { // show map
           vm.showNoteMap = true;
         } else if (toRoute.name === 'note') { // hide map
@@ -296,7 +320,7 @@
 
 <style scoped>
   .content {
-    padding: 20px;
+    padding: 0 20px 10px;
   }
   .content > div {
     margin: 10px 0;

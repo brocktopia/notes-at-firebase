@@ -1,8 +1,8 @@
 <template>
-  <div class="app-container">
+  <div class="app-container grid-rows-4">
 
-    <header>
-      <h2>{{notebook.name}}</h2>
+    <nav class="head">
+      <h2>Notebook</h2>
       <span class="button-bar">
         <button class="icon delete-notebook" @click="deleteNotebook()"><svg><use xlink:href="./dist/symbols.svg#delete-note"><title>Delete Notebook</title></use></svg></button>
         <button class="icon edit-notebook" @click="editNotebook()"><svg><use xlink:href="./dist/symbols.svg#edit-note"><title>Edit Notebook</title></use></svg></button>
@@ -11,9 +11,14 @@
         <button class="desktop-only icon add-note" @click="addNote()"><svg><use xlink:href="./dist/symbols.svg#add-note"><title>Add New Note</title></use></svg></button>
         <button class="mobile-only icon" @click="addNoteMobile()"><svg><use xlink:href="./dist/symbols.svg#add-note"><title>Add New Note</title></use></svg></button>
       </span>
+    </nav>
+
+    <header class="main">
+      <h2>{{notebook.name}}</h2>
     </header>
 
     <div v-if="activeView === 'notebook'" class="content">
+
       <ul class="notebook">
 
         <li
@@ -58,6 +63,7 @@
 
     <div class="navigation">
       <router-link to="/">Home</router-link>
+      &middot;
       <router-link class="notebooks-link" to="/notebooks">Notebooks</router-link>
     </div>
 
