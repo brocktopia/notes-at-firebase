@@ -53,9 +53,29 @@
       :center="{'lat':geoLat,'lng':geoLon}"
       :zoom="15"
     >
+      <gmap-info-window
+        :options="infoOptions"
+        :position="notePosition"
+        :opened="infoWinOpen"
+        @closeclick="infoWinOpen=false"
+      >
+        <div class="note-info" v-if="!!note">
+          <h3 style="margin-bottom: 4px;">{{note.name}}</h3>
+          <div>{{$moment(note.Created_date.toDate()).format('l h:mm:ss a')}}</div>
+          <div v-if="hasPlace">
+            <img :src="note.place.icon" width="24" height="24"/>
+            <span>{{note.place.name}}</span>
+            <a :href="note.place.url" target="_blank">
+              <svg class="icon-tiny"><use xlink:href="./dist/symbols.svg#launch"></use></svg>
+            </a>
+          </div>
+          <p style="max-width: 300px; max-height: 280px; overflow-y: auto; white-space: pre-wrap;">{{note.note}}</p>
+        </div>
+      </gmap-info-window>
       <gmap-marker
         ref="myMarker"
-        :position="google && new google.maps.LatLng(geoLat, geoLon)"
+        :position="notePosition"
+        @click="toggleInfoWindow"
       ></gmap-marker>
     </gmap-map>
 
@@ -109,6 +129,15 @@
       note: function() {
         return this.$store.state.notes.activeNote;
       },
+      notePosition: function() {
+        return vm.note.geocode ? {
+          lat: vm.note.geocode.latitude,
+          lng: vm.note.geocode.longitude
+        } : null;
+      },
+      hasPlace: function() {
+        return (vm.note.place && vm.note.place._id);
+      },
       // Setup getters from store
       ...mapGetters('notes', ['activeNote','notebookNoteCount'])
     },
@@ -119,7 +148,14 @@
         isLoading: false,
         loadingMessage:'Loading...',
         showNoteMap:false,
-        closeRoute:'' // this param helps get the app back to notebook in the map view state
+        closeRoute:'', // this param helps get the app back to notebook in the map view state
+        infoOptions: {
+          pixelOffset: {
+            width: 0,
+            height: -35
+          }
+        },
+        infoWinOpen: false,
       }
     },
 
@@ -245,6 +281,10 @@
         //console.log('Note.showNote()');
         vm.$router.push('/note/'+vm.note._id);
       },
+      toggleInfoWindow: function(marker) {
+        //console.log('Note.toggleInfoWindow()');
+        vm.infoWinOpen = !vm.infoWinOpen;
+      },
       handleError(err) {
         console.warn('Note.handleError()');
         console.dir(err);
@@ -272,5 +312,10 @@
   }
   .navigation a {
     display: inline-block;
+  }
+  @media only screen and (min-device-width : 320px) and (max-device-width : 480px) {
+    .note-info {
+      font-size: 1rem;
+    }
   }
 </style>
