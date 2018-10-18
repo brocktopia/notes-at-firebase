@@ -79,6 +79,7 @@ module.exports = {
     ]
   },
   devServer: {
+    contentBase: path.join(__dirname, 'public'),
     historyApiFallback: true,
     noInfo: true,
     overlay: true

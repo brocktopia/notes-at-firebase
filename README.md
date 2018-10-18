@@ -66,6 +66,12 @@ npm install
 
 # build project (drop -dev for production build)
 npm run build-dev
+
+# serve on webpack-dev-server with hot reload at localhost:8080
+npm run dev
+
+# serve with Firebase CLI (no hot reload)
+firebase serve
 ```
 
 See [firebase-tools](https://github.com/firebase/firebase-tools) for details on project initialization and deployment.
