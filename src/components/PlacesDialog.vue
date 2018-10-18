@@ -10,7 +10,7 @@
         </div>
 
         <div class="modal-body">
-          <input v-model="placeName" placeholder="Enter a place name" @input="updatePlaceSearch(placeName)">
+          <input v-model="place.name" placeholder="Enter a place name" @input="updatePlaceSearch(place.name)">
           <ul class="place-list">
             <li class="place" v-for="place in places" v-on:click="$emit('select', place)">
               <img :src="place.icon" />
@@ -45,14 +45,20 @@
 
     data: function() {
       return {
-        placeName:'',
         interval:null
       }
     },
 
     props:{
       places:Array,
+      placeName:String,
       showMore:Boolean
+    },
+
+    computed:{
+      place() {
+        return {'name': this.placeName}
+      }
     },
 
     mounted: function() {

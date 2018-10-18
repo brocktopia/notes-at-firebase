@@ -19,6 +19,7 @@ export default {
       activeView: 'edit-name',
       mode:'',
       places:[],
+      placeName:'',
       note:{name:'',note:'',geocode:{latitude:0,longitude:0}}, // need enough default values for template
       placesService: null,
       showPlacesDialog: false,
@@ -199,7 +200,7 @@ export default {
       return !!(note.place && note.place.name)
     },
 
-    findPlace(placeName) {
+    findPlace() {
       //console.log(`EditNoteImpl.findPlace()`);
       let options = {
         location:{
@@ -208,21 +209,27 @@ export default {
         },
         radius:1000
       };
-      if (placeName) {
-        options.keyword = placeName;
+      if (vm.placeName) {
+        options.keyword = vm.placeName;
       }
-      vm.placesService.nearbySearch(options, function (res, status, pagination) {
-        if (status !== 'OK') return;
-        vm.places ? vm.places = vm.places.concat(res) : vm.places = res;
+      // Check to see if places have already been loaded
+      if (this.places.length > 0) {
         vm.showPlacesDialog = true;
-        if (pagination.hasNextPage) {
-          vm.showMoreButton = true;
-          vm.pagination = pagination;
-        } else {
-          vm.showMoreButton = false;
-          vm.pagination = null;
-        }
-      });
+      } else {
+        // Call PlacesService
+        vm.placesService.nearbySearch(options, function (res, status, pagination) {
+          if (status !== 'OK') return;
+          vm.places ? vm.places = vm.places.concat(res) : vm.places = res;
+          vm.showPlacesDialog = true;
+          if (pagination.hasNextPage) {
+            vm.showMoreButton = true;
+            vm.pagination = pagination;
+          } else {
+            vm.showMoreButton = false;
+            vm.pagination = null;
+          }
+        });
+      }
     },
 
     moreSelected() {
@@ -274,11 +281,12 @@ export default {
       });
     },
 
-    placeInputUpdated(placeName) {
-      //console.log(`EditNoteImpl.placeInputUpdated() ${placeName}`);
+    placeInputUpdated(name) {
+      //console.log(`EditNoteImpl.placeInputUpdated() ${name}`);
       // clear current results
+      vm.placeName = name;
       vm.places = [];
-      vm.findPlace(placeName);
+      vm.findPlace();
     },
 
     clearPlace() {
