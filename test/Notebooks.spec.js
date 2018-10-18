@@ -15,6 +15,11 @@ let store = new Vuex.Store({
   state: {
     notebooks:{
       all:[]
+    },
+    user: {
+      userAuthenticating: false,
+      userLoggedIn: true,
+      user: {}
     }
   },
   actions: actions

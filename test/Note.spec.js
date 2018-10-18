@@ -10,6 +10,7 @@ const localVue = createLocalVue();
 const testNote = {
   _id:'5b92bebbb64e6b0a4870d239',
   notebook:'5b91e91c46c21c7a882c9a0d',
+  Created_date: {toDate: function() {return new Date();}},
   name:'testing',
   note:'testing',
   geocode:{lat:0,lng:0}
@@ -17,23 +18,29 @@ const testNote = {
 localVue.use(VueRouter);
 localVue.use(Vuex);
 const router = new VueRouter();
-let actions = {
+const actions = {
   "notes/getNote": jest.fn(),
+  "notes/getNotebookNotes":() => [testNote],
   "notes/nextNote": jest.fn(),
   "notes/previousNote": jest.fn(),
   "notes/delete": jest.fn(),
 };
-let getters = {
+const getters = {
   "notes/activeNote":() => testNote,
   "notes/notebookNoteCount": () => 1
 };
-let store = new Vuex.Store({
+const store = new Vuex.Store({
   'state': {
     'notes':{
       'notebookNotes':[
         testNote
       ],
       activeNote: testNote
+    },
+    user: {
+      userAuthenticating: false,
+      userLoggedIn: true,
+      user: {}
     }
   },
   'actions': actions,

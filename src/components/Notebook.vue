@@ -28,7 +28,7 @@
           @click="noteSelect(note)"
         >
           <span class="title">{{note.name}}</span><br/>
-          <span class="date">{{$moment(note.Created_date.toDate()).format('ddd l h:mm:ss a')}}</span>
+          <span class="date">{{note.Created_date ? $moment(note.Created_date.toDate()).format('ddd l h:mm:ss a') : ''}}</span>
           <span v-if="!note.place || !note.place.name" class="geocoords">
             <svg class="icon-tiny location-icon"><use xlink:href="./dist/symbols.svg#my-location"></use></svg>
             {{(note.geocode.latitude ? note.geocode.latitude.toFixed(5) : 'Unknown') + ', ' + (note.geocode.longitude ? note.geocode.longitude.toFixed(5) : 'Unknown')}}

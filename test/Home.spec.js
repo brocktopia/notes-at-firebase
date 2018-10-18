@@ -14,10 +14,10 @@ describe('Home.vue', () => {
   });
   // it's also easy to check for the existence of elements
   it('has a button', () => {
-    expect(wrapper.contains('button.create-notebook')).toBe(true)
+    expect(wrapper.contains('button.single-large')).toBe(true)
   });
   it('button should trigger navigation', () => {
-    const button = wrapper.find('button.create-notebook');
+    const button = wrapper.find('button.single-large');
     button.trigger('click');
     expect(wrapper.vm.$route.path).toBe('/notebooks/new')
   })

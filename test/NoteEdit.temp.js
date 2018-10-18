@@ -28,6 +28,7 @@ localVue.use(Vuex);
 const router = new VueRouter();
 let actions = {
   "notes/getNote": jest.fn(),
+  "notes/getNotebookNotes":() => [testNote],
   "notes/nextNote": jest.fn(),
   "notes/previousNote": jest.fn(),
   "notes/delete": jest.fn(),
