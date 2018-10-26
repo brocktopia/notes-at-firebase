@@ -145,8 +145,8 @@ export default {
         function(position) {
           //console.dir(position);
           let latlonObj = {
-            latitude: position.coords.latitude,
-            longitude: position.coords.longitude
+            latitude: Number(position.coords.latitude.toFixed(7)),
+            longitude: Number(position.coords.longitude.toFixed(7))
           };
           vm.note.geocode = latlonObj;
           // clear any loaded places
@@ -242,8 +242,8 @@ export default {
     mapMarkerMoved(marker) {
       //console.log(`EditNoteImpl.mapMarkerMoved()`);
       let latlonObj = {
-        latitude:  marker.latLng.lat(),
-        longitude: marker.latLng.lng()
+        latitude:  Number(marker.latLng.lat().toFixed(7)),
+        longitude: Number(marker.latLng.lng().toFixed(7))
       };
       vm.note.geocode = latlonObj;
       // clear any loaded places
@@ -271,8 +271,8 @@ export default {
             _id: place.place_id
           };
           vm.note.geocode = {
-            latitude: place.geometry.location.lat(),
-            longitude: place.geometry.location.lng()
+            latitude: Number(place.geometry.location.lat().toFixed(7)),
+            longitude: Number(place.geometry.location.lng().toFixed(7))
           };
           vm.showPlacesDialog = false;
         } else {

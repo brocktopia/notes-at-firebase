@@ -41,12 +41,6 @@ a, .link {
   .content {
     height: calc(100vh - 100px);
   }
-  &.grid-rows-4 {
-    grid-template-rows: 50px 40px auto 50px;
-    .content {
-      height: calc(100vh - 140px);
-    }
-  }
 }
 input {
   min-width: 200px;
@@ -56,12 +50,12 @@ input, textarea, img {
 }
 /* header styles */
 header.main {
-  height: 40px;
+  background-color: #000;
   padding: 0 10px;
-  background-color: #fff;
   h2 {
-    margin: 0;
     line-height: 40px;
+    color: #fff;
+    margin: 0;
     overflow: hidden;
     white-space: nowrap;
     text-overflow: ellipsis;
@@ -179,6 +173,7 @@ h2.warn {
   text-align: left;
   padding: 0 10px;
   line-height: 50px;
+  color: #888;
   .icon-button-bar {
     float: right;
     display: inline-block;
@@ -325,12 +320,6 @@ button:active {
     .content {
       height: calc(100vh - 120px);
     }
-    &.grid-rows-4 {
-      grid-template-rows: 60px 50px auto 60px;
-      .content {
-        height: calc(100vh - 170px);
-      }
-    }
     input:not([type=button]), textarea {
       padding-left: 5px;
       //text-size-adjust: 150%;
@@ -353,9 +342,7 @@ button:active {
       }
     }
     header.main {
-      height: 50px;
       h2 {
-        line-height: 50px;
         font-size: 2rem;
       }
     }

@@ -8,6 +8,8 @@ import googleConfig from './google-maps-config'
 import store from './store'
 import './css/style.scss'
 import './assets/svg/symbols.svg'
+import './assets/notes-at-icon-192.png'
+import './assets/notes-at-icon-512.png'
 
 Vue.config.productionTip = false;
 

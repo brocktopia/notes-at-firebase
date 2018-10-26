@@ -1,5 +1,5 @@
 <template>
-  <div class="app-container grid-rows-4">
+  <div class="app-container">
 
     <nav class="head">
       <h2>Notebook</h2>
@@ -13,11 +13,11 @@
       </span>
     </nav>
 
-    <header class="main">
-      <h2>{{notebook.name}}</h2>
-    </header>
-
     <div v-if="activeView === 'notebook'" class="content">
+
+      <header class="main">
+        <h2>{{notebook.name}}</h2>
+      </header>
 
       <ul class="notebook">
 
@@ -63,7 +63,7 @@
 
     <div class="navigation">
       <router-link to="/">Home</router-link>
-      &middot;
+      &gt;
       <router-link class="notebooks-link" to="/notebooks">Notebooks</router-link>
     </div>
 

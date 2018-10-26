@@ -1,5 +1,5 @@
 <template>
-  <div class="app-container grid-rows-4">
+  <div class="app-container">
 
     <nav class="head">
       <h2>Note</h2>
@@ -25,69 +25,88 @@
       </span>
     </nav>
 
-    <header class="main">
-      <h2>{{note.name}}</h2>
-    </header>
+    <div class="content">
 
-    <div v-if="!showNoteMap" class="content">
+      <header class="main">
+        <h2>{{note.name}}</h2>
+      </header>
 
-      <div class="date">{{note.Created_date ? $moment(note.Created_date.toDate()).format('LLLL') : ''}}</div>
+      <div v-if="!showNoteMap" class="body">
 
-      <div class="geocoords" v-if="!!note.place && !!note.place.name">
-        <img :src="note.place.icon" class="icon-tiny" />
-        <span id="placeName">{{note.place.name}}</span>
-        <a :href="note.place.url" target="_blank" style="display: inline-block; vertical-align: middle;">
-          <svg class="icon-tiny"><use xlink:href="./dist/symbols.svg#launch"></use></svg>
-        </a>
-      </div>
+        <gmap-map
+          class="note-view-map"
+          ref="NoteMap"
+          :center="{'lat':geoLat,'lng':geoLon}"
+          :zoom="15"
+        >
+          <gmap-marker
+            ref="myMarker"
+            :position="notePosition"
+            @click="toggleInfoWindow"
+          />
+        </gmap-map>
 
-      <div class="geocoords" v-if="!!note.geocode">
-        <a @click="showMap()" class="geocords-link">
-          <svg class="icon-tiny" style="vertical-align: text-bottom;"><use xlink:href="./dist/symbols.svg#my-location"></use></svg>
-          {{note.geocode.latitude +', '+note.geocode.longitude}}
-        </a>
-      </div>
-      <p class="note">{{note.note}}</p>
-    </div>
+        <div class="date">{{note.Created_date ? $moment(note.Created_date.toDate()).format('LLLL') : ''}}</div>
 
-    <gmap-map
-      v-if="showNoteMap"
-      class="content"
-      ref="NoteMap"
-      :center="{'lat':geoLat,'lng':geoLon}"
-      :zoom="15"
-    >
-      <gmap-info-window
-        :options="infoOptions"
-        :position="notePosition"
-        :opened="infoWinOpen"
-        @closeclick="infoWinOpen=false"
-      >
-        <div class="note-info" v-if="!!note">
-          <h3 style="margin-bottom: 4px;">{{note.name}}</h3>
-          <div>{{$moment(note.Created_date.toDate()).format('l h:mm:ss a')}}</div>
-          <div v-if="hasPlace">
-            <img :src="note.place.icon" width="24" height="24"/>
-            <span>{{note.place.name}}</span>
-            <a :href="note.place.url" target="_blank">
-              <svg class="icon-tiny"><use xlink:href="./dist/symbols.svg#launch"></use></svg>
-            </a>
-          </div>
-          <p style="max-width: 300px; max-height: 280px; overflow-y: auto; white-space: pre-wrap;">{{note.note}}</p>
+        <div class="geocoords" v-if="!!note.geocode">
+          <a @click="showMap()" class="geocords-link">
+            <svg class="icon-tiny" style="vertical-align: text-bottom;"><use xlink:href="./dist/symbols.svg#my-location"></use></svg>
+            {{note.geocode.latitude +', '+note.geocode.longitude}}
+          </a>
         </div>
-      </gmap-info-window>
-      <gmap-marker
-        ref="myMarker"
-        :position="notePosition"
-        @click="toggleInfoWindow"
-      ></gmap-marker>
-    </gmap-map>
+
+        <div class="places" v-if="!!note.place && !!note.place.name">
+          <img :src="note.place.icon" class="icon-tiny" />
+          <span id="placeName">{{note.place.name}}</span>
+          <a :href="note.place.url" target="_blank" style="display: inline-block; vertical-align: middle;">
+            <svg class="icon-tiny"><use xlink:href="./dist/symbols.svg#launch"></use></svg>
+          </a>
+        </div>
+
+        <p class="note">{{note.note}}</p>
+
+      </div>
+
+      <gmap-map
+        class="gmap-container"
+        v-if="showNoteMap"
+        ref="NoteMap"
+        :center="{'lat':geoLat,'lng':geoLon}"
+        :zoom="15"
+      >
+        <gmap-info-window
+          :options="infoOptions"
+          :position="notePosition"
+          :opened="infoWinOpen"
+          @closeclick="infoWinOpen=false"
+        >
+          <div class="note-info" v-if="!!note">
+            <h3 style="margin-bottom: 4px;">{{note.name}}</h3>
+            <div>{{$moment(note.Created_date.toDate()).format('l h:mm:ss a')}}</div>
+            <div v-if="hasPlace">
+              <img :src="note.place.icon" width="24" height="24"/>
+              <span>{{note.place.name}}</span>
+              <a :href="note.place.url" target="_blank">
+                <svg class="icon-tiny"><use xlink:href="./dist/symbols.svg#launch"></use></svg>
+              </a>
+            </div>
+            <p style="max-width: 300px; max-height: 280px; overflow-y: auto; white-space: pre-wrap;">{{note.note}}</p>
+          </div>
+        </gmap-info-window>
+        <gmap-marker
+          ref="myMarker"
+          :position="notePosition"
+          @click="toggleInfoWindow"
+        ></gmap-marker>
+      </gmap-map>
+
+    </div>
 
     <div class="navigation">
       <router-link to="/">Home</router-link>
-      &middot;
+      &gt;
       <router-link class="notebooks-link" to="/notebooks">Notebooks</router-link>
-      &middot;
+      &gt;
       <a @click="closeNote()" class="back2notebook">Notebook</a>
       <span v-if="notebookNoteCount > 1" class="icon-button-bar">
         <a @click="previousNote()">
@@ -138,22 +157,22 @@
 
     computed: {
       google: gmapApi,
-      geoLat: function () {
+      geoLat() {
         return vm.note.geocode.latitude || 0;
       },
-      geoLon: function () {
+      geoLon() {
         return vm.note.geocode.longitude || 0;
       },
       note: function() {
         return this.$store.state.notes.activeNote;
       },
-      notePosition: function() {
+      notePosition() {
         return vm.note.geocode ? {
           lat: vm.note.geocode.latitude,
           lng: vm.note.geocode.longitude
         } : null;
       },
-      hasPlace: function() {
+      hasPlace() {
         return (vm.note.place && vm.note.place._id);
       },
       // Setup getters from store
@@ -173,7 +192,7 @@
             height: -35
           }
         },
-        infoWinOpen: false,
+        infoWinOpen: true
       }
     },
 
@@ -319,17 +338,33 @@
 </script>
 
 <style scoped>
-  .content {
+  .body {
+    height: calc(100% - 40px);
     padding: 0 20px 10px;
+    overflow-y: auto;
+    overflow-x: hidden;
   }
-  .content > div {
+  .gmap-container {
+    height: calc(100% - 40px);
+  }
+  .body > div {
     margin: 10px 0;
   }
-  .geocoords img {
+  .note-view-map {
+    float: right;
+    width: 200px;
+    height: 150px;
+  }
+  .date, .geocoords, .places {
+    float: left;
+    clear: left;
+  }
+  .places img {
     vertical-align: middle;
   }
   .note {
     white-space: pre-wrap;
+    clear: both;
   }
   a svg {
     fill: #42b983;
