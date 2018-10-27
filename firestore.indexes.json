@@ -10,5 +10,13 @@
   //     ]
   //   }
   // ]
-  "indexes": []
+  "indexes": [
+    {
+      "collectionId": "notes",
+      "fields": [
+        {"fieldPath": "notebook", "mode": "DESCENDING"},
+        {"fieldPath": "Created_date", "mode": "DESCENDING"}
+      ]
+    }
+  ]
 }

@@ -33,6 +33,8 @@
 
       <div v-if="!showNoteMap" class="body">
 
+        <div class="date">{{note.Created_date ? $moment(note.Created_date.toDate()).format('LLLL') : ''}}</div>
+
         <gmap-map
           class="note-view-map"
           ref="NoteMap"
@@ -46,18 +48,16 @@
           />
         </gmap-map>
 
-        <div class="date">{{note.Created_date ? $moment(note.Created_date.toDate()).format('LLLL') : ''}}</div>
-
         <div class="geocoords" v-if="!!note.geocode">
           <a @click="showMap()" class="geocords-link">
             <svg class="icon-tiny" style="vertical-align: text-bottom;"><use xlink:href="./dist/symbols.svg#my-location"></use></svg>
-            {{note.geocode.latitude +', '+note.geocode.longitude}}
+            {{geoLat +', '+geoLon}}
           </a>
         </div>
 
         <div class="places" v-if="!!note.place && !!note.place.name">
           <img :src="note.place.icon" class="icon-tiny" />
-          <span id="placeName">{{note.place.name}}</span>
+          <span class="placeName">{{note.place.name}}</span>
           <a :href="note.place.url" target="_blank" style="display: inline-block; vertical-align: middle;">
             <svg class="icon-tiny"><use xlink:href="./dist/symbols.svg#launch"></use></svg>
           </a>
@@ -158,22 +158,22 @@
     computed: {
       google: gmapApi,
       geoLat() {
-        return vm.note.geocode.latitude || 0;
+        return this.note.geocode ? this.note.geocode.latitude : 0;
       },
       geoLon() {
-        return vm.note.geocode.longitude || 0;
+        return this.note.geocode ? this.note.geocode.longitude : 0;
       },
       note: function() {
         return this.$store.state.notes.activeNote;
       },
       notePosition() {
-        return vm.note.geocode ? {
-          lat: vm.note.geocode.latitude,
-          lng: vm.note.geocode.longitude
-        } : null;
+        return this.note.geocode ? {
+          lat: this.note.geocode.latitude,
+          lng: this.note.geocode.longitude
+        } : {lat:0, lng:0};
       },
       hasPlace() {
-        return (vm.note.place && vm.note.place._id);
+        return (this.note.place && this.note.place._id);
       },
       // Setup getters from store
       ...mapGetters('notes', ['activeNote','notebookNoteCount'])
@@ -362,7 +362,16 @@
   .places img {
     vertical-align: middle;
   }
+  .places .placeName {
+    display: inline-block;
+    vertical-align: middle;
+    max-width: 520px;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+  }
   .note {
+    border: 1px solid transparent;
     white-space: pre-wrap;
     clear: both;
   }
@@ -375,6 +384,9 @@
   @media only screen and (min-device-width : 320px) and (max-device-width : 480px) {
     .note-info {
       font-size: 1rem;
+    }
+    div.body {
+      height: calc(100% - 50px);
     }
   }
 </style>

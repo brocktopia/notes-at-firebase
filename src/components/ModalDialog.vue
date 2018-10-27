@@ -18,9 +18,27 @@
           </div>
 
           <div class="modal-footer">
-            <slot name="footer">
+            <slot v-if="modalType === 'notify'" name="footer">
               <button class="modal-default-button" @click="$emit('close')">
                 OK
+              </button>
+              <br/><br/>
+            </slot>
+            <slot v-if="modalType === 'confirm'" name="footer">
+              <button class="modal-default-button" @click="$emit('close')">
+                Cancel
+              </button>
+              <button class="modal-default-button" @click="$emit('confirm')">
+                Confirm
+              </button>
+              <br/><br/>
+            </slot>
+            <slot v-if="modalType === 'yesno'" name="footer">
+              <button class="modal-default-button" @click="$emit('confirm')">
+                Yes
+              </button>
+              <button class="modal-default-button" @click="$emit('close')">
+                No
               </button>
               <br/><br/>
             </slot>
@@ -34,7 +52,14 @@
 </template>
 
 <script>
-  module.exports = {
+  export default {
+
+    props:{
+      modalType: {
+        type: String,
+        default: 'notify'
+      }
+    },
 
     data: function() {
       return {}

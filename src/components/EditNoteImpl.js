@@ -17,10 +17,11 @@ export default {
       loadingMessage: 'Loading...',
       google:null,
       activeView: 'edit-name',
+      locationDenied: false,
       mode:'',
       places:[],
       placeName:'',
-      note:{name:'',note:'',geocode:{latitude:0,longitude:0}}, // need enough default values for template
+      note:{name:'',note:'',geocode:{latitude:0,longitude:0},Created_date:{toDate(){}}}, // need enough default values for template
       placesService: null,
       showPlacesDialog: false,
       showMoreButton: false,
@@ -28,24 +29,40 @@ export default {
       showMessage: false,
       messageClass: 'notify',
       messageTitle: '',
-      messageBody: ''
+      messageBody: '',
+      showConfirm: false,
+      confirmTitle: '',
+      confirmBody: '',
+      confirmMethod: null,
+      mapSearchInput: ''
     }
   },
 
   computed: {
 
-    location: function() {
-      return { lat: vm.note.geocode.latitude, lng: vm.note.geocode.longitude }
+    location() {
+      return { lat: this.note.geocode.latitude, lng: this.note.geocode.longitude }
     },
 
-    geoLat: function() {
+    geoLat() {
       if (!this.note) return 0;
       return this.note.geocode.latitude || 0;
     },
 
-    geoLon: function() {
+    geoLon() {
       if (!this.note) return 0;
       return this.note.geocode.longitude || 0;
+    },
+
+    hasGeocoords() {
+      if (!this.note || !this.note.geocode) {
+        return false;
+      }
+      return (this.location.lat !== 0 && this.location.lng !== 0);
+    },
+
+    saveEnabled() {
+      return ((this.note.name && this.note.note) && this.note.name.length > 0 && this.note.note.length > 0);
     },
 
     // Setup getters from store
@@ -117,7 +134,7 @@ export default {
         if (!vm.activeNote._id) { // Deep-linked note-edit
           //console.log(`EditNoteImpl.initNote() deep-linked note_id [${vm.$route.params.note_id}]`);
           vm.$store.dispatch('notes/getNote', vm.$route.params.note_id)
-            .then(function() {
+            .then(() => {
               // copy data from activeNote
               Object.assign(vm.note, vm.activeNote);
               vm.isLoading = false;
@@ -135,14 +152,14 @@ export default {
       }
       // get location if this is a new note
       if (vm.mode === 'new') {
-        vm.updateCoordinates();
+        vm.updateCoordinates(false);
       }
     },
 
-    updateCoordinates() {
-      //console.log(`EditNoteImpl.updateCoordinates()`);
+    updateCoordinates(userAction) {
+      //console.log(`EditNoteImpl.updateCoordinates() userAction: ${userAction}`);
       navigator.geolocation.getCurrentPosition(
-        function(position) {
+        (position) => {
           //console.dir(position);
           let latlonObj = {
             latitude: Number(position.coords.latitude.toFixed(7)),
@@ -152,8 +169,23 @@ export default {
           // clear any loaded places
           vm.places = [];
         },
-        function(err) {
+        (err) => {
           console.warn(`EditNoteImpl.updateCoordinates() ERROR(${err.code}): ${err.message}`);
+          //console.dir(err);
+          if (err.message === 'User denied Geolocation') {
+            vm.locationDenied = true;
+            if (userAction) {
+              this.messageTitle = 'User Denied Geolocation';
+              this.messageBody = 'Access to browser geolocation data has been denied. You must allow access to that data to enable this feature. This can be done in your browser settings.';
+              this.messageClass = 'warn';
+              this.showMessage = true;
+            }
+          } else if (userAction) {
+            this.messageTitle = 'Geolocation Failed';
+            this.messageBody = 'Your device was unable to determine your current location.';
+            this.messageClass = 'notify';
+            this.showMessage = true;
+          }
         },
         {
           enableHighAccuracy: true
@@ -168,7 +200,7 @@ export default {
       vm.isLoading = true;
       if (vm.mode === 'edit') {
         vm.$store.dispatch('notes/updateActiveNote', vm.note)
-          .then(function () {
+          .then(() => {
             vm.isLoading = false;
             if (closeRoute.includes(vm.activeNote._id)) {
               vm.$router.push(closeRoute);
@@ -179,7 +211,7 @@ export default {
           .catch(vm.handleError);
       } else if (vm.mode === 'new') {
         vm.$store.dispatch('notes/saveActiveNote', vm.note)
-          .then(function () {
+          .then(() => {
             vm.isLoading = false;
             vm.$router.push('/note/' + vm.activeNote._id);
           })
@@ -217,8 +249,15 @@ export default {
         vm.showPlacesDialog = true;
       } else {
         // Call PlacesService
-        vm.placesService.nearbySearch(options, function (res, status, pagination) {
-          if (status !== 'OK') return;
+        vm.placesService.nearbySearch(options, (res, status, pagination) => {
+          if (status !== 'OK') {
+            if (status === 'ZERO_RESULTS') {
+              vm.noPlaceResults = true;
+            } else {
+              vm.showServiceFailure();
+              return;
+            }
+          }
           vm.places ? vm.places = vm.places.concat(res) : vm.places = res;
           vm.showPlacesDialog = true;
           if (pagination.hasNextPage) {
@@ -261,7 +300,7 @@ export default {
         placeId: place.place_id,
         fields:['name', 'url']
       };
-      vm.placesService.getDetails(options, function(placeDetail, status) {
+      vm.placesService.getDetails(options, (placeDetail, status) => {
         //console.log(`EditNoteImpl.placeSelected() place details [${status}]`);
         if (status === 'OK') {
           vm.note.place = {
@@ -274,7 +313,9 @@ export default {
             latitude: Number(place.geometry.location.lat().toFixed(7)),
             longitude: Number(place.geometry.location.lng().toFixed(7))
           };
+          // hide the 2 potential dialogs that call this method
           vm.showPlacesDialog = false;
+          vm.showConfirm = false;
         } else {
           console.warn(`EditNoteImpl.placeSelected() Error [${status}] getting Place details`);
         }
@@ -294,6 +335,54 @@ export default {
       vm.$delete(vm.note, 'place');
       // needs to be empty object to save
       vm.note.place = {};
+    },
+
+    searchForLocation(location) {
+      //console.log(`NoteEditor.searchForLocation() location [${location}]`);
+      const options = {
+        query: location
+      };
+      // Make sure we have valid geocoordinates
+      if (this.hasGeocoords) {
+        options.location = {
+          lat: this.geoLat,
+          lng: this.geoLon
+        }
+      }
+      // perform Places textSearch
+      this.placesService.textSearch(options, (res, status) => {
+        //console.log(`NoteEditor.searchForLocation() status [${status}] results`);
+        //console.dir(res);
+        // TODO Future option for displaying multiple results
+        if (status === 'OK') {
+          const loc = res[0];
+          //this.note.geocode = this.note.geocode || {};
+          this.note.geocode = {
+            latitude: Number(loc.geometry.location.lat().toFixed(7)),
+            longitude: Number(loc.geometry.location.lng().toFixed(7))
+          };
+          if (loc.place_id) {
+            this.confirmTitle = 'Add Place';
+            this.confirmBody = `Your search for "${location}" found place information for <img src="${loc.icon}" width="25" height="25" style="vertical-align: middle;"><b>${loc.name}</b>. Would you like to save this with your note?`;
+            this.confirmMethod = this.placeSelected.bind(this, loc);
+            this.showConfirm = true;
+          }
+        } else if (status === 'ZERO_RESULTS') {
+          this.messageTitle = 'No Results';
+          this.messageBody = `Your search for [${location}] return no results.`;
+          this.messageClass = 'notify';
+          this.showMessage = true;
+        } else {
+          this.showServiceFailure();
+        }
+      })
+    },
+
+    showServiceFailure() {
+      //console.log(`NoteEditor.showServiceFailure()`);
+      vm.messageTitle = 'Service Failure';
+      vm.messageBody = 'There was a problem searching for places at your current location.';
+      vm.showMessage = true;
     },
 
     handleError(err) {

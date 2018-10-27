@@ -19,7 +19,7 @@
         <h2>{{notebook.name}}</h2>
       </header>
 
-      <ul class="notebook">
+      <ul v-if="notes.length > 0" class="notebook">
 
         <li
           v-for="note in notes"
@@ -368,6 +368,8 @@
 <style scoped>
   ul {
     margin: 0;
+    height: calc(100% - 40px);
+    overflow: auto;
   }
   ul.notebook li {
     margin: 0;
@@ -418,5 +420,11 @@
   }
   .place-icon {
     fill: #ed453b;
+  }
+  /* Mobile fixes */
+  @media only screen and (min-device-width : 320px) and (max-device-width : 480px) {
+    ul.notebook{
+      height: calc(100% - 50px);
+    }
   }
 </style>

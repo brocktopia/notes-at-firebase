@@ -104,9 +104,26 @@ button.icon {
   &:hover, &:focus {
     background-color: rgba(255, 255, 255, 0.3);
   }
+  &.bg-lt {
+    &:hover, &:focus {
+      background-color: rgba(128, 128, 128, 0.3);
+    }
+  }
   svg {
     width: 50px;
     height: 50px;
+  }
+  &.small {
+    width: 30px;
+    height: 30px;
+    padding: 0;
+    -webkit-border-radius: 5px;
+    -moz-border-radius: 5px;
+    border-radius: 5px;
+    svg {
+      width: 30px;
+      height: 30px;
+    }
   }
 }
 h2.warn {
@@ -274,6 +291,7 @@ button:active {
     }
     .modal-default-button {
       float: right;
+      margin-left: 10px;
     }
     .modal-optional-botton {
       float: left;
@@ -344,6 +362,7 @@ button:active {
     header.main {
       h2 {
         font-size: 2rem;
+        line-height: 50px;
       }
     }
     .navigation {

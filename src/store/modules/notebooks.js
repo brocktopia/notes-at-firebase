@@ -12,6 +12,11 @@ export default {
 
   actions: {
 
+    /*
+       Firestore uses id property but I wanted to maintain parity with other versions of the app
+       so I'm creating a duplicate _id property in all data objects.
+    */
+
     load({commit, state}) {
       //console.log('store.actions.notebooks.getNotebooks()');
       // check to see if notebooks have been loaded already
@@ -20,7 +25,9 @@ export default {
         return true;
       } else {
         let notebooksRef = this.$fbdb.collection('users').doc(this.state.user.user.uid).collection('notebooks');
-        return notebooksRef.get()
+        return notebooksRef
+          .orderBy('Created_date', 'desc')
+          .get()
           .then((QuerySnapshot) => {
             let notebooks = QuerySnapshot.docs.map(doc => Object.assign({'_id':doc.id}, doc.data()));
             commit('setNotebooks', notebooks);

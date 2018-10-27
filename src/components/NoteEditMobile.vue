@@ -2,7 +2,7 @@
   <div>
 
     <!-- Name, Date & Map settings -->
-    <div :class="'app-container' + (mode === 'new' ? ' new-note' : ' edit-note')" v-if="activeView === 'edit-name'">
+    <div :class="'app-container' + (mode === 'new' ? ' new' : ' edit')" v-if="activeView === 'edit-name'">
 
       <nav class="head">
         <h2>{{mode === 'edit' ? 'Note - Edit' : 'Note - Create'}}</h2>
@@ -10,10 +10,15 @@
           <button class="icon" @click="activeView = 'edit-note'"><svg><use xlink:href="./dist/symbols.svg#arrow-forward">
             <title>Next</title>
           </use></svg></button>
+          <button class="icon" @click="saveNote()"><svg><use xlink:href="./dist/symbols.svg#save">
+            <title>Save</title>
+          </use></svg></button>
         </span>
       </nav>
 
       <div class="content name-edit">
+
+        <!-- CSS Grid requires 6 elements for layout (name, date, location, places, search, map) -->
 
         <div class="name">
           <label v-if="mode === 'edit'" for="noteName" style="font-size: smaller;">Name</label>
@@ -23,11 +28,16 @@
           </span>
         </div>
 
-        <div class="date">{{$moment(note.Created_date).format('LLLL')}}</div>
+        <div class="date">{{$moment(note.Created_date.toDate()).format('LLLL')}}</div>
 
         <div class="geocoords">
-          <svg class="icon-tiny location-icon" style="vertical-align: text-bottom;"><use xlink:href="./dist/symbols.svg#my-location"></use></svg>
-          {{note.geocode.latitude +', '+note.geocode.longitude}}
+          <label for="geocords">Location:</label>
+          <span v-if="hasGeocoords" id="geocords" class="link">{{geoLat + ', ' + geoLon}}</span>
+          <span v-if="!hasGeocoords && locationDenied" class="location-denied">Location access has been denied</span>
+          <span v-if="!hasGeocoords && !locationDenied" class="location-unknown">Your location can not be determined</span>
+          <button class="icon small bg-lt action-icon" @click="updateCoordinates(true)">
+            <svg class="icon-small"><use xlink:href="./dist/symbols.svg#my-location"></use></svg>
+          </button>
         </div>
 
         <div class="place">
@@ -41,8 +51,21 @@
           </span>
         </div>
 
+        <div class="search">
+          <input
+            type="text"
+            v-model="mapSearchInput"
+            class="map-search-input"
+            placeholder="Search for location"
+            @keyup.enter="searchForLocation(mapSearchInput)"
+          >
+          <button class="icon small bg-lt" @click="searchForLocation(mapSearchInput)"><svg><use xlink:href="./dist/symbols.svg#search">
+            <title>Search</title>
+          </use></svg></button>
+          <span class="map-info">Drag marker to move location.</span>
+        </div>
+
         <gmap-map
-          class="content"
           ref="NoteMap"
           :center="{'lat':geoLat,'lng':geoLon}"
           :zoom="15"
@@ -52,7 +75,7 @@
             ref="myMarker"
             :draggable="true"
             @dragend="mapMarkerMoved"
-            :position="{'lat':note.geocode.latitude, 'lng':note.geocode.longitude}"></gmap-marker>
+            :position="{'lat':geoLat, 'lng':geoLon}"></gmap-marker>
         </gmap-map>
 
       </div>
@@ -65,7 +88,7 @@
     </div>
 
     <!-- Note input -->
-    <div :class="'app-container' + (mode === 'new' ? ' new-note' : ' edit-note')" v-if="activeView === 'edit-note'">
+    <div :class="'app-container' + (mode === 'new' ? ' new' : ' edit')" v-if="activeView === 'edit-note'">
 
       <nav class="head">
         <h2>{{mode === 'edit' ? 'Note - Edit' : 'Note - Create'}}</h2>
@@ -101,9 +124,22 @@
       v-on:more="moreSelected"
     ></places-dialog>
 
-    <modal-dialog v-if="showMessage" @close="showMessage = false">
+    <modal-dialog
+      v-if="showMessage"
+      @close="showMessage = false"
+    >
       <h3 :class="messageClass" slot="header">{{messageTitle}}</h3>
       <div slot="body" v-html="messageBody"></div>
+    </modal-dialog>
+
+    <modal-dialog
+      v-if="showConfirm"
+      :modalType="'yesno'"
+      @close="showConfirm = false"
+      @confirm="confirmMethod()"
+    >
+      <h3 :class="'notify'" slot="header">{{confirmTitle}}</h3>
+      <div slot="body" v-html="confirmBody"></div>
     </modal-dialog>
 
     <div class="loading-mask" v-if="isLoading"><span>{{loadingMessage}}</span></div>
@@ -130,19 +166,36 @@
 </script>
 
 <style scoped>
-  .app-container.edit-note .name-edit {
+  .app-container.edit .name-edit {
     display: grid;
-    grid-template-rows: 120px 40px 60px 60px auto;
+    grid-template-rows: 120px 40px 50px 60px 40px auto;
   }
-  .app-container.new-note .name-edit {
+  .app-container.new .name-edit {
     display: grid;
-    grid-template-rows: 90px 40px 60px 60px auto;
+    grid-template-rows: 90px 40px 50px 60px 40px auto;
   }
   #noteName {
     font-size: 1.8rem;
   }
   .content {
     padding: 20px;
+  }
+  .content > * {
+    margin-bottom: 10px;
+  }
+  .content input {
+    width: 100%;
+  }
+  .char-count {
+    color: darkgreen;
+  }
+  .char-count-close {
+    color: orangered;
+  }
+  .geocoords, .place {
+    height: 50px;
+    line-height: 50px;
+    width: 100%;
   }
   span.no-place {
     font-size: smaller;
@@ -156,43 +209,41 @@
     text-overflow: ellipsis;
     vertical-align: text-bottom;
   }
-  #noteNote {
-    height: 100%;
-    font-size: 1.8rem;
-  }
-  .geocoords {
-    color: #4e7eef;
-    fill: #4e7eef;
-  }
-  .geocoords, .place {
-    height: 50px;
-    line-height: 50px;
-    width: 100%;
-  }
   .place button {
     vertical-align: top;
+  }
+  .geocoords button {
+    margin-top: 10px;
   }
   .place svg {
     fill: #ed453b;
   }
-  .content > * {
-    margin-bottom: 10px;
-  }
-  .content > *:last-child {
+  .search {
     margin-bottom: 0;
   }
-  .content input {
-    width: 100%;
+  .search input.map-search-input {
+    display: inline-block;
+    line-height: 1em;
+    font-size: 1em;
+    width: 250px;
+    min-width: 250px;
+  }
+  .map-info {
+    float: right;
+    font-size: smaller;
+    color: #888;
+    margin-top: 8px;
+  }
+  #noteNote {
+    height: 100%;
+    font-size: 1.8rem;
   }
   .content textarea {
     width: 100%;
     heigth: 100%;
     overflow: auto;
   }
-  .char-count {
-    color: darkgreen;
-  }
-  .char-count-close {
-    color: orangered;
+  .content > *:last-child {
+    margin-bottom: 0;
   }
 </style>

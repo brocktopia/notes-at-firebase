@@ -25,6 +25,11 @@ export default {
 
   actions: {
 
+    /*
+       Firestore uses id property but I wanted to maintain parity with other versions of the app
+       so I'm creating a duplicate _id property in all data objects.
+    */
+
     getNotes({commit}) {
       //console.log('store.actions.notes.getNotes()');
       let notesRef = this.$fbdb.collection('users').doc(this.state.user.user.uid).collection('notes');
@@ -49,9 +54,12 @@ export default {
     },
 
     getNotebookNotes({commit, dispatch}, notebook_id) {
-      //console.log('store.actions.notes.getNotebookNotes() notebook_id ['+notebook_id+']');
+      console.log('store.actions.notes.getNotebookNotes() notebook_id ['+notebook_id+']');
       let notesRef = this.$fbdb.collection('users').doc(this.state.user.user.uid).collection('notes');
-      return notesRef.where('notebook', '==', notebook_id).get()
+      return notesRef
+        .where('notebook', '==', notebook_id)
+        .orderBy('Created_date', 'desc')
+        .get()
         .then((QuerySnapshot) => {
           let notes = QuerySnapshot.docs.map(doc => Object.assign({'_id':doc.id}, doc.data()));
           commit('setNotebookNotes', notes);
@@ -85,10 +93,13 @@ export default {
     },
 
     createActiveNote({commit}, notebook_id) {
-      //console.log('store.actions.notes.createActiveNote()');
+      console.log('store.actions.notes.createActiveNote()');
+      // Need a reference to firebase for static firestore methods
+      // Firestore can take Javascript dates but for UI consistency I want to use firestore timestamp
+      const fb = this.$fbdb.app.firebase_;
       let note = {
         'name':'',
-        'Created_date': new Date(),
+        'Created_date': fb.firestore.Timestamp.now(),
         'geocode': {
           'latitude':0,
           'longitude':0
@@ -146,7 +157,6 @@ export default {
                 commit('addNotebookNote', noteData);
                 return commit('updateActiveNote', noteData)
               })
-
           }
         })
         .catch(err => {throw(err)})
