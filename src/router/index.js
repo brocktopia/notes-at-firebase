@@ -11,7 +11,6 @@ import Notebooks from '../components/Notebooks'
 import Notebook from '../components/Notebook'
 import Note from '../components/Note'
 import NoteEdit from '../components/NoteEdit'
-import NoteEditMobile from '../components/NoteEditMobile'
 import Verified from '../components/Verified'
 import NavError from '../components/NavError'
 
@@ -153,7 +152,7 @@ const router = new VueRouter({
     ,{
       path:'/note-edit-mobile/:note_id',
       name:'note-edit-mobile',
-      component: NoteEditMobile,
+      component: NoteEdit,
       meta: {
         requiresLogin:true
       }
@@ -161,7 +160,7 @@ const router = new VueRouter({
     ,{
       path:'/note-new-mobile/:notebook_id',
       name:'note-new-mobile',
-      component: NoteEditMobile,
+      component: NoteEdit,
       meta: {
         requiresLogin:true
       }

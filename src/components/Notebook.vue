@@ -8,7 +8,7 @@
         <button class="icon edit-notebook" @click="editNotebook()"><svg><use xlink:href="./dist/symbols.svg#edit-note"><title>Edit Notebook</title></use></svg></button>
         <button class="icon show-map" v-if="activeView === 'notebook'" @click="showMap()"><svg><use xlink:href="./dist/symbols.svg#map"><title>Show Map</title></use></svg></button>
         <button class="icon show-list" v-if="activeView !== 'notebook'" @click="closeNotebookMap()"><svg><use xlink:href="./dist/symbols.svg#list"><title>Show Note List</title></use></svg></button>
-        <button class="desktop-only icon add-note" @click="addNote()"><svg><use xlink:href="./dist/symbols.svg#add-note"><title>Add New Note</title></use></svg></button>
+        <button class="desktop-only icon add-note" @click="addNote('desktop')"><svg><use xlink:href="./dist/symbols.svg#add-note"><title>Add New Note</title></use></svg></button>
         <button class="mobile-only icon" @click="addNoteMobile()"><svg><use xlink:href="./dist/symbols.svg#add-note"><title>Add New Note</title></use></svg></button>
       </span>
     </nav>
