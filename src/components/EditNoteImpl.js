@@ -40,6 +40,14 @@ export default {
 
   computed: {
 
+    device() {
+      if (this.$route.name.includes('mobile')) {
+        return 'mobile';
+      } else {
+        return 'desktop';
+      }
+    },
+
     location() {
       return { lat: this.note.geocode.latitude, lng: this.note.geocode.longitude }
     },

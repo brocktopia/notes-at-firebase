@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div v-if="device === 'mobile'">
 
     <!-- Name, Date & Map settings -->
     <div :class="'app-container' + (mode === 'new' ? ' new' : ' edit')" v-if="activeView === 'edit-name'">
