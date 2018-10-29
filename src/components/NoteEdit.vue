@@ -9,7 +9,7 @@
           <button class="icon action-icon" @click="closeNote()"><svg><use xlink:href="./dist/symbols.svg#close-note">
             <title>Cancel Edit</title>
           </use></svg></button>
-          <button v-if="saveEnabled" class="icon action-icon" @click="saveNote()"><svg><use xlink:href="./dist/symbols.svg#save">
+          <button v-if="saveEnabled" class="icon action-icon save-note" @click="saveNote()"><svg><use xlink:href="./dist/symbols.svg#save">
             <title>Save Note</title>
           </use></svg></button>
         </span>
@@ -274,7 +274,7 @@
   import PlacesDialog from './PlacesDialog'
   import ModalDialog from './ModalDialog'
   import {GmapMap, GmapMarker} from 'vue2-google-maps'
-  import { mapGetters } from 'vuex'
+  //import { mapGetters } from 'vuex'
 
   let vm,
     closeRoute;
@@ -346,13 +346,21 @@
         return ((this.note.name && this.note.note) && this.note.name.length > 0 && this.note.note.length > 0);
       },
 
+      activeNote: function() {
+        return this.$store.state.notes.activeNote;
+      },
+
+      notebookNoteCount: function() {
+        return this.$store.state.notes.notebookNoteCount;
+      },
+
       // Setup getters from store
-      ...mapGetters('notes', ['activeNote','notebookNoteCount'])
+      //...mapGetters('notes', ['activeNote','notebookNoteCount'])
     },
 
     watch: {
       '$store.state.user.userAuthenticating': (val, oldVal) => {
-        //console.log(`EditNoteImpl.watch($store.state.user.userAuthenticating) val [${val}] oldVal [${oldVal}]`);
+        //console.log(`NoteEdit.watch($store.state.user.userAuthenticating) val [${val}] oldVal [${oldVal}]`);
         if (!val && !!vm.$store.state.user.user.uid) {
           vm.initNote();
         }
@@ -360,7 +368,7 @@
     },
 
     beforeRouteEnter(toRoute, fromRoute, next) {
-      //console.log('EditNoteImpl.beforeRouteEnter()');
+      //console.log('NoteEdit.beforeRouteEnter()');
       if (fromRoute.name) {
         closeRoute = fromRoute.fullPath;
       }
@@ -368,7 +376,7 @@
     },
 
     mounted() {
-      //console.log(`EditNoteImpl.mounted()`);
+      //console.log(`NoteEdit.mounted()`);
       vm = this;
       // make sure user isn't being authenticated
       if (!vm.$store.state.user.userAuthenticating) {
@@ -380,26 +388,30 @@
         vm.google = google;
       });
       // get places service
-      vm.$refs.NoteMap.$mapPromise.then((map) => {
-        vm.placesService = new vm.google.maps.places.PlacesService(map);
-      });
+      try {
+        vm.$refs.NoteMap.$mapPromise.then((map) => {
+          vm.placesService = new vm.google.maps.places.PlacesService(map);
+        });
+      } catch (e) {
+        console.warn('Failied to get Places Service!');
+      }
     },
 
     methods:{
 
       initNote() {
-        //console.log(`EditNoteImpl.initNote()`);
+        //console.log(`NoteEdit.initNote()`);
         // Check route to determine if note is new
         if (vm.$route.name === 'note-new' || vm.$route.name === 'note-new-mobile') {
           vm.mode = 'new'
         } else {
           vm.mode = 'edit'
         }
-        //console.log(`EditNoteImpl.initNote() mode: ${vm.mode}`);
+        //console.log(`NoteEdit.initNote() mode: ${vm.mode}`);
         // Check for deep-linking
         if (vm.mode === 'new') {
           if (!vm.activeNote.notebook) { // Deep-linked note-new
-            //console.log(`EditNoteImpl.initNote() new note deep-linked`);
+            //console.log(`NoteEdit.initNote() new note deep-linked`);
             // pull notebook_id out of route
             vm.$store.dispatch('notes/createActiveNote', vm.$route.params.notebook_id)
               .then(() => {
@@ -413,7 +425,7 @@
           }
         } else if (vm.mode === 'edit') {
           if (!vm.activeNote._id) { // Deep-linked note-edit
-            //console.log(`EditNoteImpl.initNote() deep-linked note_id [${vm.$route.params.note_id}]`);
+            //console.log(`NoteEdit.initNote() deep-linked note_id [${vm.$route.params.note_id}]`);
             vm.$store.dispatch('notes/getNote', vm.$route.params.note_id)
               .then(() => {
                 // copy data from activeNote
@@ -425,11 +437,12 @@
               })
               .catch(vm.handleError);
           } else {
+            console.warn('NoteEdit.initNote() no activeNote');
             Object.assign(vm.note, vm.activeNote);
             vm.isLoading = false;
           }
         } else {
-          console.warn('EditNoteImpl.initNote() Unable to determine context for initialization');
+          console.warn('NoteEdit.initNote() Unable to determine context for initialization');
         }
         // get location if this is a new note
         if (vm.mode === 'new') {
@@ -438,7 +451,7 @@
       },
 
       updateCoordinates(userAction) {
-        //console.log(`EditNoteImpl.updateCoordinates() userAction: ${userAction}`);
+        //console.log(`NoteEdit.updateCoordinates() userAction: ${userAction}`);
         navigator.geolocation.getCurrentPosition(
           (position) => {
             //console.dir(position);
@@ -451,7 +464,7 @@
             vm.places = [];
           },
           (err) => {
-            console.warn(`EditNoteImpl.updateCoordinates() ERROR(${err.code}): ${err.message}`);
+            console.warn(`NoteEdit.updateCoordinates() ERROR(${err.code}): ${err.message}`);
             //console.dir(err);
             if (err.message === 'User denied Geolocation') {
               vm.locationDenied = true;
@@ -475,7 +488,7 @@
       },
 
       saveNote() {
-        //console.log(`EditNoteImpl.saveNote()`);
+        //console.log(`NoteEdit.saveNote()`);
         //vm.$emit('save', vm.note);
         vm.loadingMessage = 'Saving Note...';
         vm.isLoading = true;
@@ -501,7 +514,7 @@
       },
 
       closeNote() {
-        //console.log(`EditNoteImpl.closeNote() closeRoute [${closeRoute}]`);
+        //console.log(`NoteEdit.closeNote() closeRoute [${closeRoute}]`);
         if (closeRoute) {
           vm.$router.push(closeRoute);
         } else {
@@ -514,7 +527,7 @@
       },
 
       findPlace() {
-        //console.log(`EditNoteImpl.findPlace()`);
+        //console.log(`NoteEdit.findPlace()`);
         let options = {
           location:{
             lat:vm.geoLat,
@@ -553,14 +566,14 @@
       },
 
       moreSelected() {
-        //console.log(`EditNoteImpl.moreSelected()`);
+        //console.log(`NoteEdit.moreSelected()`);
         if (vm.pagination) {
           vm.pagination.nextPage();
         }
       },
 
       mapMarkerMoved(marker) {
-        //console.log(`EditNoteImpl.mapMarkerMoved()`);
+        //console.log(`NoteEdit.mapMarkerMoved()`);
         let latlonObj = {
           latitude:  Number(marker.latLng.lat().toFixed(7)),
           longitude: Number(marker.latLng.lng().toFixed(7))
@@ -571,18 +584,18 @@
       },
 
       placesClose() {
-        //console.log(`EditNoteImpl.placesClose()`);
+        //console.log(`NoteEdit.placesClose()`);
         vm.showPlacesDialog = false;
       },
 
       placeSelected(place) {
-        //console.log(`EditNoteImpl.placeSelected()`);
+        //console.log(`NoteEdit.placeSelected()`);
         let options = {
           placeId: place.place_id,
           fields:['name', 'url']
         };
         vm.placesService.getDetails(options, (placeDetail, status) => {
-          //console.log(`EditNoteImpl.placeSelected() place details [${status}]`);
+          //console.log(`NoteEdit.placeSelected() place details [${status}]`);
           if (status === 'OK') {
             vm.note.place = {
               name: place.name,
@@ -598,13 +611,13 @@
             vm.showPlacesDialog = false;
             vm.showConfirm = false;
           } else {
-            console.warn(`EditNoteImpl.placeSelected() Error [${status}] getting Place details`);
+            console.warn(`NoteEdit.placeSelected() Error [${status}] getting Place details`);
           }
         });
       },
 
       placeInputUpdated(name) {
-        //console.log(`EditNoteImpl.placeInputUpdated() ${name}`);
+        //console.log(`NoteEdit.placeInputUpdated() ${name}`);
         // clear current results
         vm.placeName = name;
         vm.places = [];
@@ -612,7 +625,7 @@
       },
 
       clearPlace() {
-        //console.log(`EditNoteImpl.clearPlace()`);
+        //console.log(`NoteEdit.clearPlace()`);
         vm.$delete(vm.note, 'place');
         // needs to be empty object to save
         vm.note.place = {};

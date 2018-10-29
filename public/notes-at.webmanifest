@@ -1,0 +1,24 @@
+{
+  "name": "notes@ GeoTagged Notes",
+  "short_name": "notes@",
+  "description": "A note taking app that stores geolocation data with each note so you can keep track of \"where\" the note was created.",
+  "icons": [
+    {
+      "src": "/dist/notes-at-icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/dist/notes-at-icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ],
+  "lang": "en-US",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "theme_color": "#ffa22f",
+  "background_color": "#ffa22f"
+}

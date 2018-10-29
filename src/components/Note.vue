@@ -144,8 +144,8 @@
 
 <script>
   import ModalDialog from './ModalDialog'
-  import {gmapApi, GmapMap} from 'vue2-google-maps'
-  import { mapGetters } from 'vuex'
+  import {gmapApi, GmapMap, GmapMarker} from 'vue2-google-maps'
+  //import { mapGetters } from 'vuex'
 
   var vm,
    closeRoute;
@@ -156,27 +156,41 @@
     },
 
     computed: {
+
       google: gmapApi,
+
       geoLat() {
         return this.note.geocode ? this.note.geocode.latitude : 0;
       },
+
       geoLon() {
         return this.note.geocode ? this.note.geocode.longitude : 0;
       },
+
       note: function() {
         return this.$store.state.notes.activeNote;
       },
+
       notePosition() {
         return this.note.geocode ? {
           lat: this.note.geocode.latitude,
           lng: this.note.geocode.longitude
         } : {lat:0, lng:0};
       },
+
       hasPlace() {
         return (this.note.place && this.note.place._id);
       },
+
+      activeNote: function() {
+        return this.$store.state.notes.activeNote;
+      },
+
+      notebookNoteCount: function() {
+        return this.$store.state.notes.notebookNoteCount;
+      },
       // Setup getters from store
-      ...mapGetters('notes', ['activeNote','notebookNoteCount'])
+      //...mapGetters('notes', ['activeNote','notebookNoteCount'])
     },
 
     data() {

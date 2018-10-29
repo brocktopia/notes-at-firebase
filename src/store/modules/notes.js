@@ -54,7 +54,7 @@ export default {
     },
 
     getNotebookNotes({commit, dispatch}, notebook_id) {
-      console.log('store.actions.notes.getNotebookNotes() notebook_id ['+notebook_id+']');
+      //console.log('store.actions.notes.getNotebookNotes() notebook_id ['+notebook_id+']');
       let notesRef = this.$fbdb.collection('users').doc(this.state.user.user.uid).collection('notes');
       return notesRef
         .where('notebook', '==', notebook_id)
@@ -68,7 +68,7 @@ export default {
     },
 
     getNoteCount({commit}) {
-      console.log('store.actions.notes.getNoteCount()');
+      //console.log('store.actions.notes.getNoteCount()');
       let notesRef = this.$fbdb.collection('users').doc(this.state.user.user.uid).collection('notes');
       return notesRef.get()
         .then((snapshot) => {
@@ -93,7 +93,7 @@ export default {
     },
 
     createActiveNote({commit}, notebook_id) {
-      console.log('store.actions.notes.createActiveNote()');
+      //console.log('store.actions.notes.createActiveNote()');
       // Need a reference to firebase for static firestore methods
       // Firestore can take Javascript dates but for UI consistency I want to use firestore timestamp
       const fb = this.$fbdb.app.firebase_;
@@ -157,6 +157,7 @@ export default {
                 commit('addNotebookNote', noteData);
                 return commit('updateActiveNote', noteData)
               })
+              .catch(err => {throw(err)})
           }
         })
         .catch(err => {throw(err)})
@@ -187,7 +188,7 @@ export default {
     },
 
     deleteAll({commit}) {
-      console.log('store.actions.notes.deleteAll()');
+      //console.log('store.actions.notes.deleteAll()');
       let notesRef = this.$fbdb.collection('users').doc(this.state.user.user.uid).collection('notes');
       let deleteCount = 0;
       return notesRef.get()
@@ -201,7 +202,7 @@ export default {
           });
           return Promise.all(deletes)
             .then(() => {
-              console.log(`store.actions.notes.deleteAll() ${deleteCount} notes deleted`);
+              //console.log(`store.actions.notes.deleteAll() ${deleteCount} notes deleted`);
               return commit('deleteAll');
             })
         })
@@ -240,7 +241,6 @@ export default {
     },
     setNoteCount(state, count) {
       state.noteCount = count;
-      console.log(arguments);
       return count;
     },
     delete(state, note_id) {
@@ -253,7 +253,7 @@ export default {
       }
     },
     deleteAll(state) {
-      console.log('store.mutations.notes.deleteAll()');
+      //console.log('store.mutations.notes.deleteAll()');
       state.notebookNotes = [];
       state.notes = [];
       state.notesCount = 0;

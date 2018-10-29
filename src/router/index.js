@@ -147,9 +147,7 @@ const router = new VueRouter({
       meta: {
         requiresLogin:true
       }
-    }
-    // NoteEditMobile Component
-    ,{
+    },{
       path:'/note-edit-mobile/:note_id',
       name:'note-edit-mobile',
       component: NoteEdit,

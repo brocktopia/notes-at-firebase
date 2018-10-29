@@ -3,7 +3,8 @@ import VueRouter from 'vue-router'
 import Vuex from 'vuex'
 import Note from '@/components/Note.vue'
 import moment from 'moment'
-import Vue from "vue";
+import Vue from "vue"
+import * as VueGoogleMaps from 'vue2-google-maps'
 
 Vue.prototype.$moment = moment;
 const localVue = createLocalVue();
@@ -13,9 +14,10 @@ const testNote = {
   Created_date: {toDate: function() {return new Date();}},
   name:'testing',
   note:'testing',
-  geocode:{lat:0,lng:0}
+  geocode:{latitude:0,longitude:0}
 };
 localVue.use(VueRouter);
+localVue.use(VueGoogleMaps);
 localVue.use(Vuex);
 const router = new VueRouter();
 const actions = {

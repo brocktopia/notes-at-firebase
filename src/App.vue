@@ -14,7 +14,8 @@
     data() {
       return {
         isLoading:false,
-        loadingMessage:'Authenticating...'
+        loadingMessage:'Authenticating...',
+        isDevMode: true
       }
     },
 
@@ -54,7 +55,34 @@
       let db = vm.$firebase.firestore();
       db.settings({
         timestampsInSnapshots: true
-      })
+      });
+      // Register ServiceWorks
+      if ('serviceWorker' in navigator && !this.isDevMode) {
+        //console.log(`App.mounted() Let's register some service workers!`);
+        navigator.serviceWorker.register('serviceworkers.js', { scope: './' })
+          .then(function(swRegistration) {
+            //console.log(`App.mounted() service workers registration`);
+            let sw;
+
+            if(swRegistration.installing) {
+              // Service worker installing
+              sw = swRegistration.installing;
+            } else if(swRegistration.waiting) {
+              // Service worker installed and waiting--skipWaiting
+              sw = swRegistration.waiting;
+            } else if(swRegistration.active) {
+              // Service worker active
+              sw = swRegistration.active;
+            }
+
+            //console.log(`App.mounted() service worker`);
+            //console.dir(sw);
+
+          }).catch(function(error) {
+          // registration failed
+          console.warn('Service worker registration failed with ' + error);
+        });
+      }
     },
 
     methods: {
