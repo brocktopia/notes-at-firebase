@@ -101,9 +101,22 @@ a couple of small structural changes to deploy into Firebase hosting, but that p
 It's great having the app up online with user accounts. Google's free Spark plan is great for developers that just want to
 test the waters. There are still a lot of Firebase features for me to explore.
 
+## Notes on Progressive Web App update
+
+I copied over the PWA features I added to the [notes-at-idb](https://github.com/brocktopia/notes-at-idb) version of this
+application. This gives the app the ability to cache the core application source for quicker mobile loading and provides
+an app manifest to allow the app to be added to the user's mobile homescreen and be launched without the browser chrome. 
+Caching files does present some complexities in doing code updates. You need to push a new version of your service workers
+up any time you want to update your code so that it can clear out old caches. 
+
+The next step for me on the path of PWA is to implement client side functionality for offline use. The app will need to 
+determine when the user is offline and watch for PUT or POST calls to the API in order to save user data to local storage. 
+The app will then need to determine when the user is online again and sync any saved data in local storage with the 
+Firestore database.
+
 ## To-Do Roadmap
 
-* Implement progressive web application features into the app.
+* Add ability to save note data offline using IndexedDB and have it sync when online.
 
 ## Live Application
 The app is now live on Firebase here: [notes-at.firebaseapp.com](https://notes-at.firebaseapp.com)
