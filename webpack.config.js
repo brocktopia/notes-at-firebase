@@ -1,6 +1,7 @@
 var path = require('path')
 var webpack = require('webpack')
 const UglifyJsPlugin = require('uglifyjs-webpack-plugin')
+const VueLoaderPlugin = require('vue-loader/lib/plugin')
 
 module.exports = {
  // context: path.resolve(__dirname, 'public'),
@@ -67,7 +68,10 @@ module.exports = {
       {
         test: /\.js$/,
         loader: 'babel-loader',
-        exclude: /node_modules/
+        exclude: file => (
+          /node_modules/.test(file) &&
+          !/\.vue\.js/.test(file)
+        )
       },
       {
         test: /\.(png|jpg|gif|svg)$/,
@@ -89,7 +93,8 @@ module.exports = {
   },
   devtool: '#eval-source-map',
   plugins: [
-    new webpack.HotModuleReplacementPlugin({})
+    new webpack.HotModuleReplacementPlugin({}),
+    new VueLoaderPlugin()
   ]
 }
 

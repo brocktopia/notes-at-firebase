@@ -4,22 +4,22 @@
     <nav class="head">
       <h2>Note</h2>
       <span class="button-bar">
-        <button class="icon delete-note" @click="deleteNote()"><svg><use xlink:href="./dist/symbols.svg#delete-note">
+        <button class="icon delete-note" @click="deleteNote()"><svg><use xlink:href="dist/symbols.svg#delete-note">
           <title>Delete Note</title>
         </use></svg></button>
-        <button class="desktop-only icon edit-note" @click="editNote()"><svg><use xlink:href="./dist/symbols.svg#edit-note">
+        <button class="desktop-only icon edit-note" @click="editNote()"><svg><use xlink:href="dist/symbols.svg#edit-note">
           <title>Edit Note</title>
         </use></svg></button>
-        <button class="mobile-only icon edit-note" @click="editNoteMobile()"><svg><use xlink:href="./dist/symbols.svg#edit-note">
+        <button class="mobile-only icon edit-note" @click="editNoteMobile()"><svg><use xlink:href="dist/symbols.svg#edit-note">
           <title>Edit Note</title>
         </use></svg></button>
-        <button v-if="showNoteMap" class="icon show-note" @click="showNote()"><svg><use xlink:href="./dist/symbols.svg#note">
+        <button v-if="showNoteMap" class="icon show-note" @click="showNote()"><svg><use xlink:href="dist/symbols.svg#note">
           <title>Show Note</title>
         </use></svg></button>
-        <button v-if="showNoteMap === false" class="icon show-map" @click="showMap()"><svg><use xlink:href="./dist/symbols.svg#map">
+        <button v-if="showNoteMap === false" class="icon show-map" @click="showMap()"><svg><use xlink:href="dist/symbols.svg#map">
           <title>Show Map</title>
         </use></svg></button>
-        <button class="icon close-note" @click="closeNote()"><svg><use xlink:href="./dist/symbols.svg#close-note">
+        <button class="icon close-note" @click="closeNote()"><svg><use xlink:href="dist/symbols.svg#close-note">
           <title>Close Note</title>
         </use></svg></button>
       </span>
@@ -50,7 +50,7 @@
 
         <div class="geocoords" v-if="!!note.geocode">
           <a @click="showMap()" class="geocords-link">
-            <svg class="icon-tiny" style="vertical-align: text-bottom;"><use xlink:href="./dist/symbols.svg#my-location"></use></svg>
+            <svg class="icon-tiny" style="vertical-align: text-bottom;"><use xlink:href="dist/symbols.svg#my-location"></use></svg>
             {{geoLat +', '+geoLon}}
           </a>
         </div>
@@ -59,7 +59,7 @@
           <img :src="note.place.icon" class="icon-tiny" />
           <span class="placeName">{{note.place.name}}</span>
           <a :href="note.place.url" target="_blank" style="display: inline-block; vertical-align: middle;">
-            <svg class="icon-tiny"><use xlink:href="./dist/symbols.svg#launch"></use></svg>
+            <svg class="icon-tiny"><use xlink:href="dist/symbols.svg#launch"></use></svg>
           </a>
         </div>
 
@@ -87,7 +87,7 @@
               <img :src="note.place.icon" width="24" height="24"/>
               <span>{{note.place.name}}</span>
               <a :href="note.place.url" target="_blank">
-                <svg class="icon-tiny"><use xlink:href="./dist/symbols.svg#launch"></use></svg>
+                <svg class="icon-tiny"><use xlink:href="dist/symbols.svg#launch"></use></svg>
               </a>
             </div>
             <p style="max-width: 300px; max-height: 280px; overflow-y: auto; white-space: pre-wrap;">{{note.note}}</p>
@@ -110,12 +110,12 @@
       <a @click="closeNote()" class="back2notebook">Notebook</a>
       <span v-if="notebookNoteCount > 1" class="icon-button-bar">
         <a @click="previousNote()">
-          <svg><use xlink:href="./dist/symbols.svg#arrow-back">
+          <svg><use xlink:href="dist/symbols.svg#arrow-back">
             <title>Previous Note</title>
           </use></svg>
         </a>
         <a @click="nextNote()">
-          <svg><use xlink:href="./dist/symbols.svg#arrow-forward">
+          <svg><use xlink:href="dist/symbols.svg#arrow-forward">
             <title>Next Note</title>
           </use></svg>
         </a>
@@ -145,10 +145,9 @@
 <script>
   import ModalDialog from './ModalDialog'
   import {gmapApi, GmapMap, GmapMarker} from 'vue2-google-maps'
+  // mapGetters was breaking my test so I switched over to using basic computed properties
   //import { mapGetters } from 'vuex'
 
-  var vm,
-   closeRoute;
   export default {
 
     components: {
@@ -167,7 +166,7 @@
         return this.note.geocode ? this.note.geocode.longitude : 0;
       },
 
-      note: function() {
+      note() {
         return this.$store.state.notes.activeNote;
       },
 
@@ -182,15 +181,15 @@
         return (this.note.place && this.note.place._id);
       },
 
-      activeNote: function() {
+      activeNote() {
         return this.$store.state.notes.activeNote;
       },
 
-      notebookNoteCount: function() {
-        return this.$store.state.notes.notebookNoteCount;
+      notebookNoteCount() {
+        return this.$store.state.notes.notebookNotes.length;
       },
       // Setup getters from store
-      //...mapGetters('notes', ['activeNote','notebookNoteCount'])
+      //...mapGetters('notes', ['notebookNoteCount'])
     },
 
     data() {
@@ -199,7 +198,6 @@
         isLoading: false,
         loadingMessage:'Loading...',
         showNoteMap:false,
-        closeRoute:'', // this param helps get the app back to notebook in the map view state
         infoOptions: {
           pixelOffset: {
             width: 0,
@@ -214,138 +212,140 @@
       $route(toRoute, fromRoute) {
         //console.log(`Note.watch.$route() toRoute [${toRoute.name}] fromRoute [${fromRoute.name}] path [${toRoute.path}] note_id [${toRoute.params.note_id}]`);
         // watch for id changes
-        if ((vm.note && toRoute.params.note_id) && vm.note._id !== toRoute.params.note_id) {
+        if ((this.note && toRoute.params.note_id) && this.note._id !== toRoute.params.note_id) {
           // handle browser navigation
-          vm.$store.dispatch('notes/setActiveNote', toRoute.params.note_id);
+          this.$store.dispatch('notes/setActiveNote', toRoute.params.note_id);
         }
         // watch for map toggle
         if (toRoute.name === 'note-map') { // show map
-          vm.showNoteMap = true;
+          this.showNoteMap = true;
         } else if (toRoute.name === 'note') { // hide map
-          vm.showNoteMap = false;
+          this.showNoteMap = false;
         } else {
           console.warn('Note.$route() Unhandled route [' + toRoute.path + ']');
         }
       },
-      '$store.state.user.userAuthenticating': (val, oldVal) => {
-        //console.log(`Note.watch($store.state.user.userAuthenticating) val [${val}] oldVal [${oldVal}]`);
-        if (!val && !!vm.$store.state.user.user.uid) {
-          vm.initNote();
-        }
-      }
-    },
 
-    beforeRouteEnter(toRoute, fromRoute, next) {
-      if (!closeRoute && fromRoute.name) {
-        if (!fromRoute.name.includes('note-') && fromRoute.name != 'note') {
-          closeRoute = fromRoute.fullPath;
+      '$store.state.user.userAuthenticating': function(val, oldVal) {
+        //console.log(`Note.watch($store.state.user.userAuthenticating) val [${val}] oldVal [${oldVal}]`);
+        if (!val && !!this.$store.state.user.user.uid) {
+          this.initNote();
         }
-      } else if (fromRoute.name && fromRoute.name.includes('notebook')) {
-        closeRoute = fromRoute.fullPath;
       }
-      next();
     },
 
     mounted() {
-      //console.log(`Note.mounted() closeRoute [${closeRoute}]`);
-      vm = this;
-      if (!vm.$store.state.user.userAuthenticating) {
-        vm.initNote();
+      //console.log(`Note.mounted() notebookNoteCount [${this.$store.state.notes.notebookNoteCount}]`);
+      if (!this.$store.state.user.userAuthenticating) {
+        this.initNote();
       }
     },
 
     methods: {
+
       initNote() {
         //console.log('Note.initNote()');
-        vm.isLoading = true;
-        if (!closeRoute) { // Note must be deep-linked
-          //console.log('Note.mounted() deeplinked');
-          vm.$store.dispatch('notes/getNote', vm.$route.params.note_id)
+        this.isLoading = true;
+        if (!this.activeNote._id) { // Note must be deep-linked first load
+          //console.log('Note.initNote() deeplinked');
+          this.$store.dispatch('notes/getNote', this.$route.params.note_id)
             .then(() => {
-              vm.isLoading = false;
-              if (vm.$route.name === 'note-map') {
-                vm.showNoteMap = true;
+              this.isLoading = false;
+              if (this.$route.name === 'note-map') {
+                this.showNoteMap = true;
               }
-              closeRoute = '/notebook/' + vm.note.notebook;
               // load notebook notes for next/previous navigation
-              vm.$store.dispatch('notes/getNotebookNotes', vm.note.notebook)
+              this.$store.dispatch('notes/getNotebookNotes', this.note.notebook)
                 .then(() => {
                   // Notebook notes have loaded
                 })
-                .catch(vm.handleError);
+                .catch(this.handleError);
             })
-            .catch(vm.handleError);
+            .catch(this.handleError);
         } else {
-          if (vm.$route.name === 'note-map') {
-            vm.showNoteMap = true;
+          if (this.$route.name === 'note-map') {
+            this.showNoteMap = true;
           }
-          vm.isLoading = false;
+          this.isLoading = false;
         }
       },
+
       editNote() {
         //console.log('Note.editNote()');
-        vm.$router.push('/note-edit/' + vm.note._id);
+        this.$router.push('/note-edit/' + this.note._id);
       },
+
       editNoteMobile() {
         //console.log('Note.editNoteMobile()');
-        vm.$router.push('/note-edit-mobile/' + vm.note._id);
+        this.$router.push('/note-edit-mobile/' + this.note._id);
       },
+
       closeNote() {
-        //console.log(`Note.closeNote() [${closeRoute}]`);
-        vm.$router.push(closeRoute);
+        //console.log(`Note.closeNote()`);
+        this.$router.push('/notebook/' + this.note.notebook);
       },
+
       nextNote() {
         //console.log('Note.nextNote()');
-        vm.$store.dispatch('notes/nextNote')
-          .then(function() {
-            vm.$router.push('/note/' + vm.note._id + (vm.showNoteMap ? '/map/' : ''));
+        this.$store.dispatch('notes/nextNote')
+          .then(() => {
+            this.$router.push('/note/' + this.note._id + (this.showNoteMap ? '/map/' : ''));
           })
-          .catch(vm.handleError)
+          .catch(this.handleError)
       },
+
       previousNote() {
         //console.log('Note.previousNote()');
-        vm.$store.dispatch('notes/previousNote')
-          .then(function() {
-            vm.$router.push('/note/' + vm.note._id + (vm.showNoteMap ? '/map/' : ''));
+        this.$store.dispatch('notes/previousNote')
+          .then(() => {
+            this.$router.push('/note/' + this.note._id + (this.showNoteMap ? '/map/' : ''));
           })
-          .catch(vm.handleError)
+          .catch(this.handleError)
       },
+
       deleteNote() {
         //console.log('Note.deleteNote()');
-        vm.showConfirmModal = true;
+        this.showConfirmModal = true;
       },
+
       cancelDelete() {
         //console.log('Note.cancelDelete()');
-        vm.showConfirmModal = false;
+        this.showConfirmModal = false;
       },
+
       confirmDelete() {
         //console.log('Note.confirmDelete()');
-        vm.loadingMessage = 'Removing Note...';
-        vm.isLoading = true;
-        let notebook_id = vm.note.notebook;
-        vm.$store.dispatch('notes/delete', vm.note._id)
-          .then(function () {
-            vm.$router.push('/notebook/' + notebook_id);
-            vm.isLoading = false;
+        this.loadingMessage = 'Removing Note...';
+        this.isLoading = true;
+        let notebook_id = this.note.notebook;
+        this.$store.dispatch('notes/delete', this.note._id)
+          .then(() => {
+            this.$router.push('/notebook/' + notebook_id);
+            this.isLoading = false;
           })
-          .catch(vm.handleError);
+          .catch(this.handleError);
       },
+
       showMap() {
-        //console.log('Note.showMap() lat ['+vm.geoLat+'] lng ['+vm.geoLon+']');
-        vm.$router.push('/note/'+vm.note._id+'/map');
+        //console.log('Note.showMap() lat ['+this.geoLat+'] lng ['+this.geoLon+']');
+        this.$router.push('/note/'+this.note._id+'/map');
       },
+
       showNote() {
         //console.log('Note.showNote()');
-        vm.$router.push('/note/'+vm.note._id);
+        this.$router.push('/note/'+this.note._id);
       },
-      toggleInfoWindow: function(marker) {
+
+      toggleInfoWindow(marker) {
         //console.log('Note.toggleInfoWindow()');
-        vm.infoWinOpen = !vm.infoWinOpen;
+        this.infoWinOpen = !this.infoWinOpen;
       },
+
       handleError(err) {
         console.warn('Note.handleError()');
         console.dir(err);
       }
+
     }
 
   }

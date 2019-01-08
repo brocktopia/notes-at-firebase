@@ -6,10 +6,10 @@
       <nav class="head">
         <h2>{{mode === 'edit' ? 'Note - Edit' : 'Note - Create'}}</h2>
         <span class="button-bar">
-          <button class="icon action-icon" @click="closeNote()"><svg><use xlink:href="./dist/symbols.svg#close-note">
+          <button class="icon action-icon" @click="closeNote()"><svg><use xlink:href="dist/symbols.svg#close-note">
             <title>Cancel Edit</title>
           </use></svg></button>
-          <button v-if="saveEnabled" class="icon action-icon save-note" @click="saveNote()"><svg><use xlink:href="./dist/symbols.svg#save">
+          <button v-if="saveEnabled" class="icon action-icon save-note" @click="saveNote()"><svg><use xlink:href="dist/symbols.svg#save">
             <title>Save Note</title>
           </use></svg></button>
         </span>
@@ -32,12 +32,12 @@
           <span v-if="hasGeocoords" id="geocords" class="link">{{geoLat + ', ' + geoLon}}</span>
           <span v-if="!hasGeocoords && locationDenied" class="location-denied">Location access has been denied</span>
           <span v-if="!hasGeocoords && !locationDenied" class="location-unknown">Your location can not be determined</span>
-          <svg class="icon-small action-icon" @click="updateCoordinates(true)"><use xlink:href="./dist/symbols.svg#my-location"></use></svg>
+          <svg class="icon-small action-icon" @click="updateCoordinates(true)"><use xlink:href="dist/symbols.svg#my-location"></use></svg>
         </div>
 
         <div class="place">
           <label v-if="!hasPlace(note)" for="placeName">
-            <svg class="icon-small"><use xlink:href="./dist/symbols.svg#place"></use></svg>
+            <svg class="icon-small"><use xlink:href="dist/symbols.svg#place"></use></svg>
           </label>
           <label v-if="hasPlace(note)" for="placeName">
             <img :src="note.place.icon" width="24" height="24" />
@@ -57,7 +57,7 @@
             placeholder="Search for location"
             @keyup.enter="searchForLocation(mapSearchInput)"
           >
-          <button class="icon small bg-lt" @click="searchForLocation(mapSearchInput)"><svg><use xlink:href="./dist/symbols.svg#search">
+          <button class="icon small bg-lt" @click="searchForLocation(mapSearchInput)"><svg><use xlink:href="dist/symbols.svg#search">
             <title>Search</title>
           </use></svg></button>
           <span class="map-info">Drag marker to move location.</span>
@@ -128,10 +128,10 @@
         <nav class="head">
           <h2>{{mode === 'edit' ? 'Note - Edit' : 'Note - Create'}}</h2>
           <span class="button-bar">
-            <button class="icon" @click="activeView = 'edit-note'"><svg><use xlink:href="./dist/symbols.svg#arrow-forward">
+            <button class="icon" @click="activeView = 'edit-note'"><svg><use xlink:href="dist/symbols.svg#arrow-forward">
               <title>Next</title>
             </use></svg></button>
-            <button v-if="saveEnabled" class="icon" @click="saveNote()"><svg><use xlink:href="./dist/symbols.svg#save">
+            <button v-if="saveEnabled" class="icon" @click="saveNote()"><svg><use xlink:href="dist/symbols.svg#save">
               <title>Save</title>
             </use></svg></button>
           </span>
@@ -157,12 +157,12 @@
             <span v-if="!hasGeocoords && locationDenied" class="location-denied">Location access has been denied</span>
             <span v-if="!hasGeocoords && !locationDenied" class="location-unknown">Your location can not be determined</span>
             <button class="icon small bg-lt action-icon" @click="updateCoordinates(true)">
-              <svg class="icon-small"><use xlink:href="./dist/symbols.svg#my-location"></use></svg>
+              <svg class="icon-small"><use xlink:href="dist/symbols.svg#my-location"></use></svg>
             </button>
           </div>
 
           <div class="place">
-            <svg v-if="!hasPlace(note)" class="icon-small"><use xlink:href="./dist/symbols.svg#place"></use></svg>
+            <svg v-if="!hasPlace(note)" class="icon-small"><use xlink:href="dist/symbols.svg#place"></use></svg>
             <img v-if="hasPlace(note)" :src="note.place.icon" class="icon-small" style="vertical-align:unset;" />
             <span :class="hasPlace(note) ? 'has-place' : 'no-place'" id="placeName">{{note.place && note.place._id ? note.place.name : 'Click the button to add a place'}}</span>
             <span style="float:right;">
@@ -180,7 +180,7 @@
               placeholder="Search for location"
               @keyup.enter="searchForLocation(mapSearchInput)"
             >
-            <button class="icon small bg-lt" @click="searchForLocation(mapSearchInput)"><svg><use xlink:href="./dist/symbols.svg#search">
+            <button class="icon small bg-lt" @click="searchForLocation(mapSearchInput)"><svg><use xlink:href="dist/symbols.svg#search">
               <title>Search</title>
             </use></svg></button>
             <span class="map-info">Drag marker to move location.</span>
@@ -214,10 +214,10 @@
         <nav class="head">
           <h2>{{mode === 'edit' ? 'Note - Edit' : 'Note - Create'}}</h2>
           <span class="button-bar">
-            <button class="icon" @click="activeView = 'edit-name'"><svg><use xlink:href="./dist/symbols.svg#arrow-back">
+            <button class="icon" @click="activeView = 'edit-name'"><svg><use xlink:href="dist/symbols.svg#arrow-back">
               <title>Back</title>
             </use></svg></button>
-            <button v-if="saveEnabled" class="icon" @click="saveNote()"><svg><use xlink:href="./dist/symbols.svg#save">
+            <button v-if="saveEnabled" class="icon" @click="saveNote()"><svg><use xlink:href="dist/symbols.svg#save">
               <title>Save Note</title>
             </use></svg></button>
           </span>
@@ -546,7 +546,7 @@
           vm.placesService.nearbySearch(options, (res, status, pagination) => {
             if (status !== 'OK') {
               if (status === 'ZERO_RESULTS') {
-                vm.noPlaceResults = true;
+                //vm.noPlaceResults = true;
               } else {
                 vm.showServiceFailure();
                 return;

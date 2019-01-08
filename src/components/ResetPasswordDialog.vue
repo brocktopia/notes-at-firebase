@@ -5,7 +5,7 @@
 
       <div class="modal-container">
 
-        <button class="icon close-icon" @click="$emit('close')"><svg><use xlink:href="./dist/symbols.svg#close-note">
+        <button class="icon close-icon" @click="$emit('close')"><svg><use xlink:href="dist/symbols.svg#close-note">
           <title>Cancel</title>
         </use></svg></button>
 

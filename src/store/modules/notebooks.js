@@ -5,7 +5,8 @@ export default {
 
   state: {
     all:[],
-    activeNotebook:{}
+    activeNotebook:{},
+    activeNotebookView: 'list' // list | map | full
   },
 
   getters: {},
@@ -118,22 +119,27 @@ export default {
   },
 
   mutations: {
+
     setNotebooks(state, notebooks) {
       //console.log('store.mutations.notebooks.setNotebooks()');
       state.all = notebooks;
     },
+
     setNotebook(state, notebook) {
       //console.log('store.mutations.notebooks.setNotebook()');
       state.activeNotebook = notebook;
     },
+
     addNotebook(state, notebook) {
       //console.log('store.mutations.notebooks.addNotebook()');
       state.all.unshift(notebook);
     },
+
     updateNotebook(state, notebook) {
       //console.log('store.mutations.notebooks.addNotebook()');
       Object.assign(state.activeNotebook, notebook);
     },
+
     delete(state, notebook_id) {
       //console.log('store.mutations.notebooks.delete()');
       let i = state.all.findIndex(n => n._id == notebook_id);
@@ -144,13 +150,20 @@ export default {
         throw({message:'Could not find notebook by id ['+notebook_id+']'})
       }
     },
+
     deleteAll(state) {
       //console.log('store.mutations.notebooks.deleteAll()');
       state.notebookNotes = [];
       state.notes = [];
       state.notesCount = 0;
       state.activeNote = null;
+    },
+
+    setNotebookView(state, mode = 'list') { // default to list
+      //console.log(`store.mutations.notebooks.setNotebookView() mode [${mode}]`);
+      state.activeNotebookView = mode;
     }
+
   }
 
 }

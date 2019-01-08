@@ -73,41 +73,6 @@ const router = new VueRouter({
         requiresLogin:true
       }
     },{
-      path:'/notebook/:notebook_id/note/:note_id',
-      name:'notebook-note',
-      component: Notebook,
-      meta: {
-        requiresLogin:true
-      }
-    },{
-      path:'/notebook/:notebook_id/note-edit/:note_id',
-      name:'notebook-note-edit',
-      component: Notebook,
-      meta: {
-        requiresLogin:true
-      }
-    },{
-      path:'/notebook/:notebook_id/note-new',
-      name:'notebook-note-new',
-      component: Notebook,
-      meta: {
-        requiresLogin:true
-      }
-    },{
-      path:'/notebook/:notebook_id/note-new-mobile',
-      name:'notebook-note-new-mobile',
-      component: Notebook,
-      meta: {
-        requiresLogin:true
-      }
-    },{
-      path:'/notebook/:notebook_id/note-edit-mobile/:note_id',
-      name:'notebook-note-edit-mobile',
-      component: Notebook,
-      meta: {
-        requiresLogin:true
-      }
-    },{
       path:'/notebook/:notebook_id/map',
       name:'notebook-map',
       component: Notebook,

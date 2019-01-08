@@ -22,11 +22,11 @@
         <p class="pw-instruct">
           (6 character minimum)
           The best passwords have:<br/>
-          At least 8 characters <span v-if="has8char"><svg class="icon-tiny"><use xlink:href="./dist/symbols.svg#check"><title>Check!</title></use></svg></span><br/>
-          Lowercase character <span v-if="hasLowerCase"><svg class="icon-tiny"><use xlink:href="./dist/symbols.svg#check"><title>Check!</title></use></svg></span><br/>
-          Uppercase character <span v-if="hasUpperCase"><svg class="icon-tiny"><use xlink:href="./dist/symbols.svg#check"><title>Check!</title></use></svg></span><br/>
-          Number character <span v-if="hasNumber"><svg class="icon-tiny"><use xlink:href="./dist/symbols.svg#check"><title>Check!</title></use></svg></span><br/>
-          Symbol character <span v-if="hasSymbol"><svg class="icon-tiny"><use xlink:href="./dist/symbols.svg#check"><title>Check!</title></use></svg></span>
+          At least 8 characters <span v-if="has8char"><svg class="icon-tiny"><use xlink:href="dist/symbols.svg#check"><title>Check!</title></use></svg></span><br/>
+          Lowercase character <span v-if="hasLowerCase"><svg class="icon-tiny"><use xlink:href="dist/symbols.svg#check"><title>Check!</title></use></svg></span><br/>
+          Uppercase character <span v-if="hasUpperCase"><svg class="icon-tiny"><use xlink:href="dist/symbols.svg#check"><title>Check!</title></use></svg></span><br/>
+          Number character <span v-if="hasNumber"><svg class="icon-tiny"><use xlink:href="dist/symbols.svg#check"><title>Check!</title></use></svg></span><br/>
+          Symbol character <span v-if="hasSymbol"><svg class="icon-tiny"><use xlink:href="dist/symbols.svg#check"><title>Check!</title></use></svg></span>
         </p>
         <button class="single-large" type="submit">Create Account</button>
       </form>

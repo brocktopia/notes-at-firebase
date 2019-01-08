@@ -20,7 +20,7 @@
               <img :src="infoMarker.note.place.icon" width="24" height="24"/>
               <span>{{infoMarker.note.place.name}}</span>
               <a :href="infoMarker.note.place.url" target="_blank">
-                <svg class="icon-tiny"><use xlink:href="./dist/symbols.svg#launch"></use></svg>
+                <svg class="icon-tiny"><use xlink:href="dist/symbols.svg#launch"></use></svg>
               </a>
             </div>
             <p style="max-width:250px;">{{infoMarker.note.note.length > 200 ? infoMarker.note.note.substr(0,200) + '...' : infoMarker.note.note}}</p>

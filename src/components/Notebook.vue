@@ -4,16 +4,18 @@
     <nav class="head">
       <h2>Notebook</h2>
       <span class="button-bar">
-        <button class="icon delete-notebook" @click="deleteNotebook()"><svg><use xlink:href="./dist/symbols.svg#delete-note"><title>Delete Notebook</title></use></svg></button>
-        <button class="icon edit-notebook" @click="editNotebook()"><svg><use xlink:href="./dist/symbols.svg#edit-note"><title>Edit Notebook</title></use></svg></button>
-        <button class="icon show-map" v-if="activeView === 'notebook'" @click="showMap()"><svg><use xlink:href="./dist/symbols.svg#map"><title>Show Map</title></use></svg></button>
-        <button class="icon show-list" v-if="activeView !== 'notebook'" @click="closeNotebookMap()"><svg><use xlink:href="./dist/symbols.svg#list"><title>Show Note List</title></use></svg></button>
-        <button class="desktop-only icon add-note" @click="addNote('desktop')"><svg><use xlink:href="./dist/symbols.svg#add-note"><title>Add New Note</title></use></svg></button>
-        <button class="mobile-only icon" @click="addNoteMobile()"><svg><use xlink:href="./dist/symbols.svg#add-note"><title>Add New Note</title></use></svg></button>
+        <button class="icon delete-notebook" @click="deleteNotebook()">
+          <svg><use xlink:href="dist/symbols.svg#delete-note"><title>Delete Notebook</title></use></svg>
+        </button>
+        <button class="icon edit-notebook" @click="editNotebook()"><svg><use xlink:href="dist/symbols.svg#edit-note"><title>Edit Notebook</title></use></svg></button>
+        <button class="icon show-map" v-if="activeView === 'list'" @click="showMap()"><svg><use xlink:href="dist/symbols.svg#map"><title>Show Map</title></use></svg></button>
+        <button class="icon show-list" v-if="activeView !== 'list'" @click="closeNotebookMap()"><svg><use xlink:href="dist/symbols.svg#list"><title>Show Note List</title></use></svg></button>
+        <button class="desktop-only icon add-note" @click="addNote('desktop')"><svg><use xlink:href="dist/symbols.svg#add-note"><title>Add New Note</title></use></svg></button>
+        <button class="mobile-only icon" @click="addNoteMobile()"><svg><use xlink:href="dist/symbols.svg#add-note"><title>Add New Note</title></use></svg></button>
       </span>
     </nav>
 
-    <div v-if="activeView === 'notebook'" class="content">
+    <div v-if="activeView === 'list'" class="content">
 
       <header class="main">
         <h2>{{notebook.name}}</h2>
@@ -30,11 +32,11 @@
           <span class="title">{{note.name}}</span><br/>
           <span class="date">{{note.Created_date ? $moment(note.Created_date.toDate()).format('ddd l h:mm:ss a') : ''}}</span>
           <span v-if="!note.place || !note.place.name" class="geocoords">
-            <svg class="icon-tiny location-icon"><use xlink:href="./dist/symbols.svg#my-location"></use></svg>
+            <svg class="icon-tiny location-icon"><use xlink:href="dist/symbols.svg#my-location"></use></svg>
             {{(note.geocode.latitude ? note.geocode.latitude.toFixed(5) : 'Unknown') + ', ' + (note.geocode.longitude ? note.geocode.longitude.toFixed(5) : 'Unknown')}}
           </span>
           <span v-if="note.place && note.place.name" class="place">
-            <svg class="icon-tiny place-icon"><use xlink:href="./dist/symbols.svg#place"></use></svg>
+            <svg class="icon-tiny place-icon"><use xlink:href="dist/symbols.svg#place"></use></svg>
             {{note.place.name}}
           </span>
           <br clear="all"/>
@@ -117,7 +119,6 @@
     data: function () {
       return {
         notebookRouteExtra: '', // currently only used to hold reference to 'map' when user navigates down into notes
-        activeView: 'notebook',
         showMessage: false,
         messageClass: 'notify',
         messageTitle: '',
@@ -131,45 +132,58 @@
     },
 
     computed: {
+
       notebookDeleteMsg: function () { // Present note count to user on notebook delete
         let notes = vm.notes;
         return (notes.length > 0 ? '<b style="color:darkred;">All ' + (notes.length > 2 ? notes.length : '') + ' notes</b> in this notebook will be deleted. ' : '')
       },
+
       // Could create getters for these but leaving it to illustrate it as possibility
       notebook: function () {
         return this.$store.state.notebooks.activeNotebook
       },
+
       notes: function () {
         return this.$store.state.notes.notebookNotes
       },
+
+      activeView() {
+        return this.$store.state.notebooks.activeNotebookView;
+      },
+
       // Setup getters from store
       ...mapGetters('notes', ['findNotebookNote', 'activeNote'])
     },
 
     watch: {
+
       $route(toRoute, fromRoute) {
         //console.log('Notebook.$route() toRoute [' + toRoute.name + '] fromRoute [' + fromRoute.name + '] path [' + toRoute.path + ']');
         if (toRoute.name === 'notebook') { // notebook home
           vm.$store.dispatch('notes/clearActiveNote')
             .catch(vm.handleError);
-          vm.notebookRouteExtra = '';
-          vm.activeView = 'notebook';
+          //vm.notebookRouteExtra = '';
+          //vm.activeView = 'notebook';
+          vm.$store.commit('notebooks/setNotebookView', 'list');
         }
         else if (toRoute.name === 'notebook-map') { // notebook map
-          vm.notebookRouteExtra = '/map';
-          vm.activeView = 'map';
+          //vm.notebookRouteExtra = '/map';
+          //vm.activeView = 'map';
+          vm.$store.commit('notebooks/setNotebookView', 'map');
         }
         else {
           console.warn('Notebook.$route() Unhandled route [' + toRoute.path + ']');
           //console.dir(toRoute);
         }
       },
+
       '$store.state.user.userAuthenticating': (val, oldVal) => {
         //console.log(`Notebook.watch($store.state.user.userAuthenticating) val [${val}] oldVal [${oldVal}]`);
         if (!val && !!vm.$store.state.user.user.uid) {
           vm.getNotebook();
         }
       }
+
     },
 
     mounted() {
@@ -181,54 +195,30 @@
     },
 
     methods: {
+
       getNotebook() {
         //console.log(`Notebook.getNotebook()`);
         vm.isLoading = true;
         // Make sure notebooks are loaded in case of deep-linking
         vm.$store.dispatch('notebooks/load')
-          .then(function () {
+          .then(() => {
             // Get Notebook
             vm.$store.dispatch('notebooks/getNotebook', vm.$route.params.notebook_id)
-              .then(function () {
+              .then(() => {
 
                 // Get Notebook Notes
                 vm.$store.dispatch('notes/getNotebookNotes', vm.$route.params.notebook_id)
-                  .then(function () {
+                  .then(() => {
 
-                    // Check route info to see if we are deep-linked
-                    if (vm.$route.params.note_id) {
-
-                      // Deep-link to Note context
-                      vm.setActiveNote(vm.$route.params.note_id);
-                      if (vm.$route.name === 'notebook-note') {
-                        vm.activeView = 'note';
-                      } else if (vm.$route.name === 'notebook-note-edit') {
-                        vm.noteEditMode = 'edit';
-                        vm.activeView = 'note-edit';
-                      } else if (vm.$route.name === 'notebook-note-edit-mobile') {
-                        vm.noteEditMode = 'edit';
-                        vm.activeView = 'note-edit-mobile';
-                      }
-                    }
-                    else if (vm.$route.name === 'notebook-note-new') {
-
-                      // Create New Note
-                      vm.$store.dispatch('notes/createActiveNote', vm.$route.params.notebook_id);
-                      vm.noteEditMode = 'new';
-                      vm.activeView = 'note-edit';
-                    }
-                    else if (vm.$route.name === 'notebook-note-new-mobile') {
-
-                      // Create New Note for mobile
-                      vm.$store.dispatch('notes/createActiveNote', vm.$route.params.notebook_id);
-                      vm.noteEditMode = 'new';
-                      vm.activeView = 'note-edit-mobile';
-                    }
-                    else if (vm.$route.name === 'notebook-map') {
-
+                    // Check route info to see determine display mode
+                    if (vm.$route.name === 'notebook-map') {
                       // Notebook Map
-                      vm.notebookRouteExtra = '/map';
-                      vm.activeView = 'map';
+                      //vm.notebookRouteExtra = '/map';
+                      //vm.activeView = 'map';
+                      vm.$store.commit('notebooks/setNotebookView', 'map');
+                    } else if (vm.activeView === 'map') {
+                      // update route to reflect view state
+                      vm.$router.replace(`/notebook/${vm.notebook._id}/map`);
                     }
 
                     // Finished
@@ -238,6 +228,7 @@
           })
           .catch(vm.handleError);
       },
+
       // Utility methods
       setActiveNote(note_id) {
         if (!vm.activeNote || vm.activeNote._id != note_id) {
@@ -260,6 +251,7 @@
 
 
       },
+
       /* These methods were deprecated when component was decomposed but I may want to add
          edit functionality into the note list at some point
       editNote: function () {
@@ -271,6 +263,7 @@
         vm.$router.push('/note-edit-mobile/' + vm.activeNote._id);
       },
       */
+
       addNote() {
         //console.log('Notebook.addNote()');
         vm.$store.dispatch('notes/createActiveNote', vm.$route.params.notebook_id)
@@ -279,6 +272,7 @@
           })
           .catch(vm.handleError)
       },
+
       addNoteMobile() {
         //console.log('Notebook.addNoteMobile()');
         vm.$store.dispatch('notes/createActiveNote', vm.$route.params.notebook_id)
@@ -293,14 +287,17 @@
         //console.log('Notebook.showMap()');
         vm.$router.push('/notebook/' + vm.notebook._id + '/map');
       },
+
       closeNotebookMap: function () {
         //console.log('Notebook.closeNotebookMap()');
         vm.$router.push('/notebook/' + vm.notebook._id);
       },
+
       editNotebook() {
         //console.log('Notebook.editNotebook()');
         vm.showEditNotebook = true;
       },
+
       saveNotebook(notebook) {
         //console.log('Notebook.saveNotebook()');
         vm.loadingMessage = 'Saving...';
@@ -313,14 +310,17 @@
           })
           .catch(vm.handleError);
       },
+
       deleteNotebook() {
         //console.log('Notebook.deleteNotebook()');
         vm.showConfirmModal = true;
       },
+
       cancelDelete() {
         //console.log('Notebook.cancelDelete()');
         vm.showConfirmModal = false;
       },
+
       confirmDelete() {
         //console.log('Notebook.confirmDelete()');
         vm.loadingMessage = 'Removing Notebook...';
@@ -333,6 +333,7 @@
           })
           .catch(vm.handleError);
       },
+
       handleError(err) {
         console.warn('Notebook.handleError()');
         console.dir(err);
@@ -361,6 +362,7 @@
         }
         vm.showMessage = true;
       }
+
     }
   }
 </script>

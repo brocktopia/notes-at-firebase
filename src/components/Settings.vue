@@ -4,7 +4,7 @@
     <nav class="head">
       <h2>Settings</h2>
       <span class="button-bar">
-        <button class="icon action-icon" @click="closeSettings()"><svg><use xlink:href="./dist/symbols.svg#close-note">
+        <button class="icon action-icon" @click="closeSettings()"><svg><use xlink:href="dist/symbols.svg#close-note">
           <title>Close Settings</title>
         </use></svg></button>
       </span>
@@ -23,7 +23,7 @@
         <input type="text" id="email" v-model="user.email" placeholder="Email">
       </div>
       <div class="form-field">
-        <svg :class="'verify-icon ' + (user.emailVerified ? 'verified' : 'unverified')"><use xlink:href="./dist/symbols.svg#verified-user">Verified User</use></svg>
+        <svg :class="'verify-icon ' + (user.emailVerified ? 'verified' : 'unverified')"><use xlink:href="dist/symbols.svg#verified-user">Verified User</use></svg>
         <span v-if="user.emailVerified">Your email address has been verified</span>
         <button class="single-large" v-if="!user.emailVerified" @click="verifyEmail">Verify Your Email</button>
       </div>

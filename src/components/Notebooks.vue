@@ -4,7 +4,7 @@
     <nav class="head">
       <h2>Notebooks</h2>
       <span class="button-bar">
-        <button class="icon add-notebook" @click="addNotebook()"><svg><use xlink:href="./dist/symbols.svg#add-item"><title>Add New Notebook</title></use></svg></button>
+        <button class="icon add-notebook" @click="addNotebook()"><svg><use xlink:href="dist/symbols.svg#add-item"><title>Add New Notebook</title></use></svg></button>
       </span>
     </nav>
 
@@ -80,9 +80,12 @@
       if (!vm.$store.state.user.userAuthenticating) {
         vm.getNotebooks();
       }
+      // reset notebook view mode
+      vm.$store.commit('notebooks/setNotebookView');
     },
 
     methods:{
+
       getNotebooks() {
         //console.log('Notebooks.getNotebooks()');
         vm.isLoading = true;
@@ -97,10 +100,12 @@
           })
           .catch(vm.handleError)
       },
+
       notebookSelect(notebook) {
         //console.log('Notebooks.notebookSelect() notebook');
         vm.$router.push('/notebook/'+notebook._id);
       },
+
       addNotebook() {
         //console.log('Notebooks.addNotebook()');
         // initialize a new notebook instance
@@ -108,6 +113,7 @@
         vm.showNewNotebook = true;
         vm.$router.replace('/notebooks/new');
       },
+
       cancelNewNotebook() {
         //console.log('Notebooks.cancelNewNotebook()');
         // clear notebookBaseObj
@@ -115,6 +121,7 @@
         vm.showNewNotebook = false;
         vm.$router.replace('/notebooks');
       },
+
       saveNewNotebook(notebook) {
         //console.log('Notebooks.saveNewNotebook()');
         vm.$store.dispatch('notebooks/addNotebook', notebook)
@@ -125,13 +132,14 @@
             vm.$router.replace('/notebooks');
           })
       },
+
       handleError(err) {
         console.warn('Notebooks.handleError()');
         console.dir(err);
         vm.isLoading = false;
       }
-    }
 
+    }
   }
 </script>
 

@@ -7,7 +7,7 @@
 
         <div class="modal-header">
           <h3>Confirm Account Delete</h3>
-          <button class="icon action-icon" @click="$emit('close')"><svg><use xlink:href="./dist/symbols.svg#close-note">
+          <button class="icon action-icon" @click="$emit('close')"><svg><use xlink:href="dist/symbols.svg#close-note">
             <title>Cancel</title>
           </use></svg></button>
         </div>

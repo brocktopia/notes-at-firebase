@@ -1,8 +1,8 @@
 # notes-at-firebase
 
 > A note taking app that retrieves and stores location data for each note. This is a fork of 
-[github.com/brocktopia/notes-at-vuex](https://github.com/brocktopia/notes-at-vuex/tree/testing) testing branch implemented
-on the Firebase platform.
+[github.com/brocktopia/notes-at-vuex](https://github.com/brocktopia/notes-at-vuex) implemented on the 
+Firebase platform.
 
 ## Dependencies
 

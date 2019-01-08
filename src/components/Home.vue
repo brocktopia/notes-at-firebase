@@ -4,10 +4,10 @@
     <nav class="head">
       <h2>Home</h2>
       <span class="button-bar">
-        <button class="icon sign-out" @click="signOut()"><svg><use xlink:href="./dist/symbols.svg#logout">
+        <button class="icon sign-out" @click="signOut()"><svg><use xlink:href="dist/symbols.svg#logout">
           <title>Sign Out</title>
         </use></svg></button>
-        <button class="icon settings" @click="loadSettings()"><svg class="bigger"><use xlink:href="./dist/symbols.svg#settings">
+        <button class="icon settings" @click="loadSettings()"><svg class="bigger"><use xlink:href="dist/symbols.svg#settings">
           <title>Settings</title>
         </use></svg></button>
       </span>
