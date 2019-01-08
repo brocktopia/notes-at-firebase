@@ -271,8 +271,8 @@
 </template>
 
 <script>
-  import PlacesDialog from './PlacesDialog'
-  import ModalDialog from './ModalDialog'
+  import PlacesDialog from '@/components/PlacesDialog'
+  import ModalDialog from '@/components/ModalDialog'
   import {GmapMap, GmapMarker} from 'vue2-google-maps'
   //import { mapGetters } from 'vuex'
 

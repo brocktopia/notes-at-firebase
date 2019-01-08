@@ -37,7 +37,7 @@
 </template>
 
 <script>
-  import ResetPasswordDialog from './ResetPasswordDialog'
+  import ResetPasswordDialog from '@/components/ResetPasswordDialog'
 
   let vm;
   export default {

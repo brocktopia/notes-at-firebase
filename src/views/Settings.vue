@@ -86,8 +86,8 @@
 </template>
 
 <script>
-  import ModalDialog from './ModalDialog'
-  import AccountDeleteDialog from './AccountDeleteDialog'
+  import ModalDialog from '@/components/ModalDialog'
+  import AccountDeleteDialog from '@/components/AccountDeleteDialog'
   import firebase from 'firebase/app'
 
   var vm, backRoute;

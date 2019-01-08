@@ -3,16 +3,16 @@ import VueRouter from 'vue-router'
 import store from '../store'
 
 // component route endpoints
-import Login from '../components/Login'
-import SignUp from '../components/SignUp'
-import Home from '../components/Home'
-import Settings from '../components/Settings'
-import Notebooks from '../components/Notebooks'
-import Notebook from '../components/Notebook'
-import Note from '../components/Note'
-import NoteEdit from '../components/NoteEdit'
-import Verified from '../components/Verified'
-import NavError from '../components/NavError'
+import Login from '../views/Login'
+import SignUp from '../views/SignUp'
+import Home from '../views/Home'
+import Settings from '../views/Settings'
+import Notebooks from '../views/Notebooks'
+import Notebook from '../views/Notebook'
+import Note from '../views/Note'
+import NoteEdit from '../views/NoteEdit'
+import Verified from '../views/Verified'
+import NavError from '../views/NavError'
 
 Vue.use(VueRouter);
 

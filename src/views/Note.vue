@@ -143,7 +143,7 @@
 </template>
 
 <script>
-  import ModalDialog from './ModalDialog'
+  import ModalDialog from '@/components/ModalDialog'
   import {gmapApi, GmapMap, GmapMarker} from 'vue2-google-maps'
   // mapGetters was breaking my test so I switched over to using basic computed properties
   //import { mapGetters } from 'vuex'

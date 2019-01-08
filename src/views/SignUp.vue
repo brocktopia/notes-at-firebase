@@ -42,7 +42,7 @@
 </template>
 
 <script>
-  var vm;
+  let vm;
   module.exports = {
     data() {
       return {

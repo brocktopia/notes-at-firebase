@@ -104,9 +104,9 @@
 </template>
 
 <script>
-  import ModalDialog from './ModalDialog'
-  import EditNotebookDialog from './EditNotebookDialog'
-  import NotebookMap from './NotebookMap'
+  import ModalDialog from '@/components/ModalDialog'
+  import EditNotebookDialog from '@/components/EditNotebookDialog'
+  import NotebookMap from '@/components/NotebookMap'
   import { mapGetters } from 'vuex'
 
   var vm;

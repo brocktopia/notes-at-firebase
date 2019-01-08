@@ -41,7 +41,7 @@
 </template>
 
 <script>
-  import EditNotebookDialog from './EditNotebookDialog'
+  import EditNotebookDialog from '@/components/EditNotebookDialog'
 
   var vm;
   export default {
