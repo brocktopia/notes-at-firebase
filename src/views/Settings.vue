@@ -165,48 +165,25 @@
         vm.backPath = backRoute || vm.backPath;
       },
       updateProfile() {
-        //console.log('Settings.updateProfile()');
+        console.log('Settings.updateProfile()');
         if (vm.changes.length === 0) {
           // There have been no changes
         } else {
-          let updates = [vm.updateUser];
+          let updates = [];
           if (vm.changes.includes('displayName') || vm.changes.includes('photoURL')) {
-            updates.push(vm.updateProfile);
-          }
-          if (vm.changes.includes('phoneNumber')) {
-            updates.push(vm.updatePhone);
+            updates.push(vm.updateUser());
           }
           if (vm.changes.includes('email')) {
-            updates.push(vm.updateEmail);
+            updates.push(vm.updateEmail());
           }
-          let method = updates.pop();
-          // Look into Promise.all()
-          method()
+          // if (vm.changes.includes('phoneNumber')) {
+          //   updates.push(vm.updatePhone());
+          // }
+          Promise.all(updates)
             .then(() => {
-              if (updates.length > 0) {
-                method = updates.pop();
-                method()
-                  .then(() => {
-                    if (updates.length > 0) {
-                      method = updates.pop();
-                      method()
-                        .then(() => {
-                          if (updates.length > 0) {
-                            method = updates.pop();
-                            method()
-                              .then(() => {
-                                return true;
-                              })
-                              .catch(vm.handleError)
-                          }
-                        })
-                        .catch(vm.handleError)
-                    }
-                  })
-                  .catch(vm.handleError)
-              }
+              console.log(`Settings.updateProfile() updates complete`);
+              vm.isLoading = false;
             })
-            .catch(vm.handleError)
         }
       },
       /* Phone number is only used as an auth alternative.
@@ -223,24 +200,23 @@
           .catch(vm.handleError)
       },
       */
+      updateUser() {
+        //console.log('Settings.updateUser()');
+        vm.loadingMessage = 'Updating...';
+        vm.isLoading = true;
+        return vm.$firebase.auth().currentUser.updateProfile({
+          displayName: vm.user.displayName,
+          photoURL: vm.user.photoURL
+        }).then(() => {
+          return this.$store.dispatch('user/updateUser', vm.user)
+        })
+        .catch(vm.handleError)
+      },
       updateEmail() {
         //console.log('Settings.updateEmail()');
         vm.loadingMessage = 'Updating Email...';
         vm.isLoading = true;
         return vm.$firebase.auth().currentUser.updateProfile(vm.user.email)
-          .then(() => {
-            vm.isLoading = false;
-          })
-          .catch(vm.handleError)
-      },
-      updateUser() {
-        //console.log('Settings.updateUser()');
-        vm.loadingMessage = 'Updating...';
-        vm.isLoading = true;
-        return this.$store.dispatch('user/updateUser', vm.user)
-          .then(() => {
-            vm.isLoading = false;
-          })
           .catch(vm.handleError)
       },
       verifyEmail() {
