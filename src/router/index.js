@@ -66,8 +66,8 @@ const router = new VueRouter({
     }
     // Notebook Component
     ,{
-      path:'/notebook/:notebook_id',
-      name:'notebook',
+      path:'/notebook/:notebook_id/(list)?',
+      name:'notebook-list',
       component: Notebook,
       meta: {
         requiresLogin:true
@@ -75,6 +75,13 @@ const router = new VueRouter({
     },{
       path:'/notebook/:notebook_id/map',
       name:'notebook-map',
+      component: Notebook,
+      meta: {
+        requiresLogin:true
+      }
+    },{
+      path:'/notebook/:notebook_id/full',
+      name:'notebook-full',
       component: Notebook,
       meta: {
         requiresLogin:true

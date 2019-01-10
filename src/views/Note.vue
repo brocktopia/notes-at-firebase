@@ -84,13 +84,13 @@
             <h3 style="margin-bottom: 4px;">{{note.name}}</h3>
             <div>{{$moment(note.Created_date.toDate()).format('l h:mm:ss a')}}</div>
             <div v-if="hasPlace">
-              <img :src="note.place.icon" width="24" height="24"/>
+              <img :src="note.place.icon" width="24" height="24" style="vertical-align: middle;"/>
               <span>{{note.place.name}}</span>
               <a :href="note.place.url" target="_blank">
                 <svg class="icon-tiny"><use xlink:href="dist/symbols.svg#launch"></use></svg>
               </a>
             </div>
-            <p style="max-width: 300px; max-height: 280px; overflow-y: auto; white-space: pre-wrap;">{{note.note}}</p>
+            <p style="max-width: 300px; max-height: 280px; overflow-y: auto; overflow-x: hidden; white-space: pre-wrap;">{{note.note}}</p>
           </div>
         </gmap-info-window>
         <gmap-marker
@@ -144,7 +144,7 @@
 
 <script>
   import ModalDialog from '@/components/ModalDialog'
-  import {gmapApi, GmapMap, GmapMarker} from 'vue2-google-maps'
+  import {GmapMap, GmapMarker} from 'vue2-google-maps'
   // mapGetters was breaking my test so I switched over to using basic computed properties
   //import { mapGetters } from 'vuex'
 
@@ -155,8 +155,6 @@
     },
 
     computed: {
-
-      google: gmapApi,
 
       geoLat() {
         return this.note.geocode ? this.note.geocode.latitude : 0;
@@ -264,7 +262,10 @@
             .catch(this.handleError);
         } else {
           if (this.$route.name === 'note-map') {
-            this.showNoteMap = true;
+            this.$gmapApiPromiseLazy().then(() => {
+              // get a render error if we try to load maps immediately
+              this.showNoteMap = true;
+            });
           }
           this.isLoading = false;
         }
@@ -352,14 +353,14 @@
 </script>
 
 <style scoped>
+  .gmap-container {
+    height: calc(100% - 50px);
+  }
   .body {
-    height: calc(100% - 40px);
+    height: calc(100% - 50px);
     padding: 0 20px 10px;
     overflow-y: auto;
     overflow-x: hidden;
-  }
-  .gmap-container {
-    height: calc(100% - 40px);
   }
   .body > div {
     margin: 10px 0;

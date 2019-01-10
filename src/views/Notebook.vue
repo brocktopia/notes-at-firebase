@@ -8,60 +8,67 @@
           <svg><use xlink:href="dist/symbols.svg#delete-note"><title>Delete Notebook</title></use></svg>
         </button>
         <button class="icon edit-notebook" @click="editNotebook()"><svg><use xlink:href="dist/symbols.svg#edit-note"><title>Edit Notebook</title></use></svg></button>
-        <button class="icon show-map" v-if="activeView === 'list'" @click="showMap()"><svg><use xlink:href="dist/symbols.svg#map"><title>Show Map</title></use></svg></button>
-        <button class="icon show-list" v-if="activeView !== 'list'" @click="closeNotebookMap()"><svg><use xlink:href="dist/symbols.svg#list"><title>Show Note List</title></use></svg></button>
         <button class="desktop-only icon add-note" @click="addNote('desktop')"><svg><use xlink:href="dist/symbols.svg#add-note"><title>Add New Note</title></use></svg></button>
         <button class="mobile-only icon" @click="addNoteMobile()"><svg><use xlink:href="dist/symbols.svg#add-note"><title>Add New Note</title></use></svg></button>
       </span>
     </nav>
 
-    <div v-if="activeView === 'list'" class="content">
+    <div class="content">
 
       <header class="main">
         <h2>{{notebook.name}}</h2>
+        <menu-button
+          menu-align="br"
+          theme="dark"
+          :items="noteMenuItems"
+          :selected="activeView"
+          @select="onNoteMenuSelect"
+        ></menu-button>
       </header>
 
-      <ul v-if="notes.length > 0" class="notebook">
+      <div v-if="activeView === 'list'" class="notebook-body">
+        <ul v-if="notes.length > 0" class="notebook">
 
-        <li
-          v-for="note in notes"
-          :key="note._id"
-          class="note-item"
-          @click="noteSelect(note)"
-        >
-          <span class="title">{{note.name}}</span><br/>
-          <span class="date">{{note.Created_date ? $moment(note.Created_date.toDate()).format('ddd l h:mm:ss a') : ''}}</span>
-          <span v-if="!note.place || !note.place.name" class="geocoords">
-            <svg class="icon-tiny location-icon"><use xlink:href="dist/symbols.svg#my-location"></use></svg>
-            {{(note.geocode.latitude ? note.geocode.latitude.toFixed(5) : 'Unknown') + ', ' + (note.geocode.longitude ? note.geocode.longitude.toFixed(5) : 'Unknown')}}
-          </span>
-          <span v-if="note.place && note.place.name" class="place">
-            <svg class="icon-tiny place-icon"><use xlink:href="dist/symbols.svg#place"></use></svg>
-            {{note.place.name}}
-          </span>
-          <br clear="all"/>
-          <span class="note">{{(note.note && note.note.length > 84) ? note.note.substr(0,84) + '...' : note.note}}</span>
-        </li>
+          <note-list-item
+            v-for="note in notes"
+            :key="note._id"
+            class="note-item"
+            @select="noteSelect"
+            @mapselect="noteMapSelect"
+            :note="note"
+          ></note-list-item>
 
-      </ul>
-      <div v-if="notes.length === 0" class="notebook-message">No notes in this notebook.</div>
+        </ul>
+
+        <div v-if="notes.length === 0" class="notebook-message">No notes in this notebook.</div>
+      </div>
+
+      <div v-if="activeView === 'full'" class="notebook-body">
+
+          <note-full-item
+            v-for="note in notes"
+            :key="note._id"
+            @select="noteSelect"
+            @mapselect="noteMapSelect"
+            :note="note"
+          ></note-full-item>
+
+        <div v-if="notes.length === 0" class="notebook-message">No notes in this notebook.</div>
+      </div>
+
+      <div v-if="activeView === 'map'" class="notebook-body">
+        <keep-alive>
+          <!-- keep-alive only works when toggling the view inside the Notebook view.
+               Navigating to a Note view and back will reset the map position        -->
+          <notebook-map
+            v-if="activeView === 'map'"
+            :notes="notes"
+            @select="noteSelect"
+          ></notebook-map>
+        </keep-alive>
+      </div>
+
     </div>
-
-    <keep-alive>
-      <!-- keep-alive only works when toggling the view inside the Notebook view.
-           Navigating to a Note view and back will reset the map position        -->
-      <notebook-map
-        v-if="activeView === 'map'"
-        :name="notebook.name"
-        :notes="notes"
-        v-on:close="closeNotebookMap"
-        v-on:edit="editNotebook"
-        v-on:delete="deleteNotebook"
-        v-on:addNote="addNote"
-        v-on:addNoteMobile="addNoteMobile"
-        v-on:select="noteSelect"
-      ></notebook-map>
-    </keep-alive>
 
     <div class="navigation">
       <router-link to="/">Home</router-link>
@@ -107,16 +114,19 @@
   import ModalDialog from '@/components/ModalDialog'
   import EditNotebookDialog from '@/components/EditNotebookDialog'
   import NotebookMap from '@/components/NotebookMap'
+  import NoteListItem from '@/components/NoteListItem'
+  import NoteFullItem from '@/components/NoteFullItem'
+  import MenuButton from '@/components/MenuButton'
   import { mapGetters } from 'vuex'
 
-  var vm;
+  let vm;
   export default {
 
     components: {
-      ModalDialog, EditNotebookDialog, NotebookMap
+      ModalDialog, EditNotebookDialog, NotebookMap, NoteListItem, MenuButton, NoteFullItem
     },
 
-    data: function () {
+    data() {
       return {
         notebookRouteExtra: '', // currently only used to hold reference to 'map' when user navigates down into notes
         showMessage: false,
@@ -127,7 +137,12 @@
         showConfirmModal: false,
         showEditNotebook: false,
         isLoading: false,
-        loadingMessage: 'Loading...' // mutable based on async task
+        loadingMessage: 'Loading...', // mutable based on async task
+        noteMenuItems: [
+          {label:'Show Note List',value:'list'},
+          {label:'Show Note Map',value:'map'},
+          {label:'Show Full Notes',value:'full'}
+        ]
       }
     },
 
@@ -159,22 +174,22 @@
 
       $route(toRoute, fromRoute) {
         //console.log('Notebook.$route() toRoute [' + toRoute.name + '] fromRoute [' + fromRoute.name + '] path [' + toRoute.path + ']');
-        if (toRoute.name === 'notebook') { // notebook home
-          vm.$store.dispatch('notes/clearActiveNote')
-            .catch(vm.handleError);
-          //vm.notebookRouteExtra = '';
-          //vm.activeView = 'notebook';
+        if (toRoute.name === 'notebook-list') { // notebook home
           vm.$store.commit('notebooks/setNotebookView', 'list');
         }
         else if (toRoute.name === 'notebook-map') { // notebook map
-          //vm.notebookRouteExtra = '/map';
-          //vm.activeView = 'map';
           vm.$store.commit('notebooks/setNotebookView', 'map');
+        }
+        else if (toRoute.name === 'notebook-full') { // notebook map
+          vm.$store.commit('notebooks/setNotebookView', 'full');
         }
         else {
           console.warn('Notebook.$route() Unhandled route [' + toRoute.path + ']');
           //console.dir(toRoute);
+          return;
         }
+        vm.$store.dispatch('notes/clearActiveNote')
+          .catch(vm.handleError);
       },
 
       '$store.state.user.userAuthenticating': (val, oldVal) => {
@@ -213,12 +228,15 @@
                     // Check route info to see determine display mode
                     if (vm.$route.name === 'notebook-map') {
                       // Notebook Map
-                      //vm.notebookRouteExtra = '/map';
-                      //vm.activeView = 'map';
                       vm.$store.commit('notebooks/setNotebookView', 'map');
                     } else if (vm.activeView === 'map') {
                       // update route to reflect view state
                       vm.$router.replace(`/notebook/${vm.notebook._id}/map`);
+                    } else if (vm.$route.name === 'notebook-full') {
+                      // Full note view
+                      vm.$store.commit('notebooks/setNotebookView', 'full');
+                    } else if (vm.activeView === 'full') {
+                      vm.$router.replace(`/notebook/${vm.notebook._id}/full`);
                     }
 
                     // Finished
@@ -242,14 +260,21 @@
 
       // Note interactions
       noteSelect(note) {
-        //console.log('Notebook.noteSelect() '+note._id);
+        console.log('Notebook.noteSelect() '+note._id);
         vm.$store.dispatch('notes/setActiveNote', note._id)
           .then(function() {
             vm.$router.push('/note/' + note._id);
           })
           .catch(vm.handleError);
+      },
 
-
+      noteMapSelect(note) {
+        console.log('Notebook.noteMapSelect() '+note._id);
+        vm.$store.dispatch('notes/setActiveNote', note._id)
+          .then(function() {
+            vm.$router.push('/note/' + note._id + '/map');
+          })
+          .catch(vm.handleError);
       },
 
       /* These methods were deprecated when component was decomposed but I may want to add
@@ -283,14 +308,9 @@
       },
 
       // Notebook methods
-      showMap() {
-        //console.log('Notebook.showMap()');
-        vm.$router.push('/notebook/' + vm.notebook._id + '/map');
-      },
-
-      closeNotebookMap: function () {
-        //console.log('Notebook.closeNotebookMap()');
-        vm.$router.push('/notebook/' + vm.notebook._id);
+      onNoteMenuSelect(item) {
+        //console.log(`Notebook.onNoteMenuSelect() ${item}`);
+        vm.$router.push('/notebook/' + vm.notebook._id + '/' + item);
       },
 
       editNotebook() {
@@ -367,61 +387,35 @@
   }
 </script>
 
-<style scoped>
+<style lang="scss" scoped>
   ul {
     margin: 0;
-    height: calc(100% - 40px);
+    overflow: auto;
+    .note-item {
+      border-top: 1px solid #cccccc;
+      border-bottom: 1px solid #999999;
+    }
+  }
+  div.notebook-body {
+    position: relative;
+    height: calc(100% - 50px);
+    padding: 0;
+    margin: 0;
     overflow: auto;
   }
-  ul.notebook li {
-    margin: 0;
-    list-style: none;
-    width: 100%;
-    background-color: #ffffff;
-    border-top: 1px solid #cccccc;
-    border-bottom: 1px solid #999999;
-    padding: 10px 20px;
-    text-align: left;
-    cursor: pointer;
-  }
-  ul.notebook li span {
-    display: inline-block;
+  header.main {
+    position: relative;
+    z-index: 999;
+    .menu-button {
+      position: absolute;
+      top: 0px;
+      right: 0px;
+      height: 50px;
+      width: 50px;
+    }
   }
   .notebook-message {
     margin: 20px;
-  }
-  .date, .note {
-    font-size: smaller;
-  }
-  .title {
-    margin-bottom: 8px;
-  }
-  .note {
-    margin-top: 8px;
-    max-width: 100%;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-  }
-  .geocoords, .place {
-    float: right;
-    font-size: smaller;
-    width: 60%;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-  }
-  .geocoords {
-    color: #4e7eef;
-  }
-  .location-icon {
-    fill: #4e7eef;
-  }
-  .place {
-    color: #666;
-  }
-  .place-icon {
-    fill: #ed453b;
   }
   /* Mobile fixes */
   @media only screen and (min-device-width : 320px) and (max-device-width : 480px) {

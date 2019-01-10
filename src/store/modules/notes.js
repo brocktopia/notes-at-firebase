@@ -53,8 +53,13 @@ export default {
         .catch(err => {throw(err)})
     },
 
-    getNotebookNotes({commit, dispatch}, notebook_id) {
+    getNotebookNotes({state, commit, dispatch}, notebook_id) {
       //console.log('store.actions.notes.getNotebookNotes() notebook_id ['+notebook_id+']');
+      // check to see if notes are already loaded
+      if (state.notebookNotes.length > 0 && state.notebookNotes[0].notebook === notebook_id) {
+        console.log(`store.actions.notes.getNotebookNotes() notes for ${notebook_id} already loaded`);
+        return true;
+      }
       let notesRef = this.$fbdb.collection('users').doc(this.state.user.user.uid).collection('notes');
       return notesRef
         .where('notebook', '==', notebook_id)

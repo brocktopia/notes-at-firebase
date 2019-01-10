@@ -1,8 +1,7 @@
 <template>
 
-    <div class="content">
+    <div class="map-container">
       <gmap-map
-        class="content"
         ref="notebookMap"
         :center="mapCenter"
         :zoom="10"
@@ -54,8 +53,7 @@
   export default {
 
     props:{
-      notes:Array,
-      name:String
+      notes:Array
     },
 
     data: function() {
@@ -172,6 +170,13 @@
 </script>
 
 <style scoped>
+  .map-container {
+    height: 100%;
+    width: 100%;
+  }
+  .vue-map-container {
+    height: 100%;
+  }
   .note-info h3 {
     margin-bottom: 0;
   }

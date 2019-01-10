@@ -22,7 +22,6 @@ export default {
       //console.log('store.actions.notebooks.getNotebooks()');
       // check to see if notebooks have been loaded already
       if(state.all.length > 0) {
-        //console.log('store.actions.notebooks.getNotebooks() notebooks already loaded');
         return true;
       } else {
         let notebooksRef = this.$fbdb.collection('users').doc(this.state.user.user.uid).collection('notebooks');
@@ -39,6 +38,7 @@ export default {
 
     getNotebook({commit, state, dispatch}, id) {
       //console.log('store.actions.notebooks.getNotebook() ['+id+']');
+      // make sure there are notebooks loaded
       if (state.all.length === 0) {
         console.warn('store.actions.notebooks.getNotebook() no notebooks loaded yet');
         // notebooks haven't loaded yet
@@ -48,7 +48,10 @@ export default {
               .catch(err => {throw(err)})
           })
           .catch(err => {throw(err)})
+      } else if (state.activeNotebook._id === id) { // check to see if notebook is already active
+        return true;
       }
+      // find notebook
       let notebook = state.all.find(notebook => notebook._id == id);
       if (notebook) {
         commit('setNotebook', notebook);
