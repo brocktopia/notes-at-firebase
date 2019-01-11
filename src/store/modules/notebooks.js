@@ -171,7 +171,7 @@ export default {
     },
 
     setScrollPosition(state, position) {
-      console.log(`store.mutations.notebooks.setScrollPosition() position [${position}]`);
+      //console.log(`store.mutations.notebooks.setScrollPosition() position [${position}]`);
       state.activeNotebookScrollPosition = position;
     }
 

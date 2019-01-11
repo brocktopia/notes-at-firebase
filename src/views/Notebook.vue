@@ -245,7 +245,7 @@
 
                     // check scroll state
                     if (vm.scrollPosition > 0) {
-                      console.log(`Notebook.mounted() set scroll position to [${vm.scrollPosition}]`);
+                      //console.log(`Notebook.mounted() set scroll position to [${vm.scrollPosition}]`);
                       const body = this.$el.querySelector('.notebook-body');
                       if (body) {
                         body.scrollTop = vm.scrollPosition;
@@ -272,10 +272,10 @@
       },
 
       recordScrollPosition(clearPosition) {
-        console.log('Notebook.recordScrollPosition()');
+        //console.log('Notebook.recordScrollPosition()');
         const body = this.$el.querySelector('.notebook-body');
         if (body) {
-          console.log(`Notebook.noteSelect() scrollTop [${body.scrollTop}]`);
+          //console.log(`Notebook.noteSelect() scrollTop [${body.scrollTop}]`);
           const position = clearPosition ? 0 : body.scrollTop;
           vm.$store.commit('notebooks/setScrollPosition', position);
         }
@@ -283,7 +283,7 @@
 
       // Note interactions
       noteSelect(note) {
-        console.log('Notebook.noteSelect() '+note._id);
+        //console.log('Notebook.noteSelect() '+note._id);
         vm.recordScrollPosition();
         vm.$store.dispatch('notes/setActiveNote', note._id)
           .then(function() {
