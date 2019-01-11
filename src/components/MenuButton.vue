@@ -54,11 +54,6 @@
       }
     },
 
-    mounted() {
-      // position menu relative to button
-      console.log(`MenuButton.mounted() selected [${this.selected}]`);
-    },
-
     methods: {
       menuSelect() {
         //console.log(`MenuButton.menuSelect()`);

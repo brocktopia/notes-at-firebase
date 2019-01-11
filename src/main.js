@@ -17,7 +17,7 @@ Vue.prototype.$firebase = firebase;
 
 Vue.prototype.$moment = moment;
 
-Vue.prototype.$version = '1.2.0';
+Vue.prototype.$version = '1.2.1';
 
 // Moved map config to external file to reduce chances of committing secret key
 Vue.use(VueGoogleMaps, {

@@ -166,6 +166,10 @@
         return this.$store.state.notebooks.activeNotebookView;
       },
 
+      scrollPosition() {
+        return this.$store.state.notebooks.activeNotebookScrollPosition;
+      },
+
       // Setup getters from store
       ...mapGetters('notes', ['findNotebookNote', 'activeNote'])
     },
@@ -202,7 +206,7 @@
     },
 
     mounted() {
-      //console.log('Notebook.mounted()');
+      console.log('Notebook.mounted()');
       vm = this;
       if (!vm.$store.state.user.userAuthenticating) {
         vm.getNotebook();
@@ -212,7 +216,7 @@
     methods: {
 
       getNotebook() {
-        //console.log(`Notebook.getNotebook()`);
+        console.log(`Notebook.getNotebook() scrollPosition [${vm.scrollPosition}]`);
         vm.isLoading = true;
         // Make sure notebooks are loaded in case of deep-linking
         vm.$store.dispatch('notebooks/load')
@@ -239,6 +243,15 @@
                       vm.$router.replace(`/notebook/${vm.notebook._id}/full`);
                     }
 
+                    // check scroll state
+                    if (vm.scrollPosition > 0) {
+                      console.log(`Notebook.mounted() set scroll position to [${vm.scrollPosition}]`);
+                      const body = this.$el.querySelector('.notebook-body');
+                      if (body) {
+                        body.scrollTop = vm.scrollPosition;
+                      }
+                    }
+
                     // Finished
                     vm.isLoading = false;
                   })
@@ -258,9 +271,20 @@
         return true;
       },
 
+      recordScrollPosition(clearPosition) {
+        console.log('Notebook.recordScrollPosition()');
+        const body = this.$el.querySelector('.notebook-body');
+        if (body) {
+          console.log(`Notebook.noteSelect() scrollTop [${body.scrollTop}]`);
+          const position = clearPosition ? 0 : body.scrollTop;
+          vm.$store.commit('notebooks/setScrollPosition', position);
+        }
+      },
+
       // Note interactions
       noteSelect(note) {
         console.log('Notebook.noteSelect() '+note._id);
+        vm.recordScrollPosition();
         vm.$store.dispatch('notes/setActiveNote', note._id)
           .then(function() {
             vm.$router.push('/note/' + note._id);
@@ -270,6 +294,7 @@
 
       noteMapSelect(note) {
         console.log('Notebook.noteMapSelect() '+note._id);
+        vm.recordScrollPosition();
         vm.$store.dispatch('notes/setActiveNote', note._id)
           .then(function() {
             vm.$router.push('/note/' + note._id + '/map');
@@ -291,6 +316,7 @@
 
       addNote() {
         //console.log('Notebook.addNote()');
+        vm.recordScrollPosition();
         vm.$store.dispatch('notes/createActiveNote', vm.$route.params.notebook_id)
           .then(function() {
             vm.$router.push('/note-new/' + vm.notebook._id);
@@ -300,6 +326,7 @@
 
       addNoteMobile() {
         //console.log('Notebook.addNoteMobile()');
+        vm.recordScrollPosition();
         vm.$store.dispatch('notes/createActiveNote', vm.$route.params.notebook_id)
           .then(function() {
             vm.$router.push('/note-new-mobile/' + vm.notebook._id);
@@ -390,7 +417,6 @@
 <style lang="scss" scoped>
   ul {
     margin: 0;
-    overflow: auto;
     .note-item {
       border-top: 1px solid #cccccc;
       border-bottom: 1px solid #999999;

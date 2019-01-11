@@ -6,7 +6,8 @@ export default {
   state: {
     all:[],
     activeNotebook:{},
-    activeNotebookView: 'list' // list | map | full
+    activeNotebookView: 'list', // list | map | full,
+    activeNotebookScrollPosition: 0
   },
 
   getters: {},
@@ -51,6 +52,8 @@ export default {
       } else if (state.activeNotebook._id === id) { // check to see if notebook is already active
         return true;
       }
+      // clear any active scroll position state
+      commit('setScrollPosition', 0);
       // find notebook
       let notebook = state.all.find(notebook => notebook._id == id);
       if (notebook) {
@@ -165,6 +168,11 @@ export default {
     setNotebookView(state, mode = 'list') { // default to list
       //console.log(`store.mutations.notebooks.setNotebookView() mode [${mode}]`);
       state.activeNotebookView = mode;
+    },
+
+    setScrollPosition(state, position) {
+      console.log(`store.mutations.notebooks.setScrollPosition() position [${position}]`);
+      state.activeNotebookScrollPosition = position;
     }
 
   }
