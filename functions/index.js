@@ -13,7 +13,7 @@ exports.onFileCreated = functions.storage
     const filePath = object.name;
     const contentType = object.contentType;
     if (
-      path.basename(filePath).startsWith('fbphoto-')
+      path.basename(filePath).startsWith('gcphoto-')
       || !contentType.includes('image')
     ) {
       //console.log(`onFileCreated() skip processing file [${filePath}]`);
@@ -36,11 +36,11 @@ exports.onFileCreated = functions.storage
             const extName = path.extname(tmpFilePath);
             //const fileName = path.basename(tmpFilePath, extName);
             const fileName = object.generation;
-            const thumbnailName = 'fbphoto-' + fileName + '-90px' + extName;
+            const thumbnailName = 'gcphoto-' + fileName + '-90px' + extName;
             const thumbnailPath =  path.join(workingDir, thumbnailName);
-            const reducedName = 'fbphoto-' + fileName + '-600px' + extName;
+            const reducedName = 'gcphoto-' + fileName + '-600px' + extName;
             const reducedPath = path.join(workingDir, reducedName);
-            const fullName = 'fbphoto-' + fileName + '-1200px' + extName;
+            const fullName = 'gcphoto-' + fileName + '-1200px' + extName;
             const fullPath = path.join(workingDir, fullName);
             return Promise.all([
               sharp(tmpFilePath).resize(90, 90).toFile(thumbnailPath),

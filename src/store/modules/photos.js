@@ -20,16 +20,16 @@ export default {
     photoUrl: (state) => (photo, size) => {
       //console.log(`store.getters.photos.photoUrl() ${size}`);
       const sizes = {thumb:'90px', medium:'600px', full:'1200px'};
-      return `${location.protocol}//storage.googleapis.com/${fbconfig.storageBucket}/images/fbphoto-${photo.id}-${sizes[size]}.${photo.ext}`;
+      return `${location.protocol}//storage.googleapis.com/${fbconfig.storageBucket}/images/gcphoto-${photo.id}-${sizes[size]}.${photo.ext}`;
     },
 
     photoObject: (state, getters) => (id, ext) => {
       if (!id || !ext) return;
       //console.log(`store.getters.photos.photoObject() id [${id}] ext [${ext}]`);
       let photos = {id: id};
-      photos.thumb = `${getters.photoBaseUrl}fbphoto-${id}-90px.${ext}`;
-      photos.medium = `${getters.photoBaseUrl}fbphoto-${id}-600px.${ext}`;
-      photos.full = `${getters.photoBaseUrl}fbphoto-${id}-1200px.${ext}`;
+      photos.thumb = `${getters.photoBaseUrl}gcphoto-${id}-90px.${ext}`;
+      photos.medium = `${getters.photoBaseUrl}gcphoto-${id}-600px.${ext}`;
+      photos.full = `${getters.photoBaseUrl}gcphoto-${id}-1200px.${ext}`;
       return photos;
     },
 
