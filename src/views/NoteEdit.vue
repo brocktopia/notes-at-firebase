@@ -1,215 +1,68 @@
 <template>
-  <div>
+  <div class="app-wrapper">
 
-    <div v-if="device === 'desktop'" class="app-container edit desktop">
+    <!-- Start desktop view -->
 
-      <nav class="head">
-        <h2>{{mode === 'edit' ? 'Note - Edit' : 'Note - Create'}}</h2>
-        <span class="button-bar">
-          <button class="icon action-icon" @click="closeNote()"><svg><use xlink:href="dist/symbols.svg#close-note">
-            <title>Cancel Edit</title>
-          </use></svg></button>
-          <button v-if="saveEnabled" class="icon action-icon save-note" @click="saveNote()"><svg><use xlink:href="dist/symbols.svg#save">
-            <title>Save Note</title>
-          </use></svg></button>
-        </span>
-      </nav>
+    <note-edit-desktop
+      v-if="device === 'desktop' && !showPhotoEdit"
+      :note="note"
+      :mode="mode"
+      :previews="photoPreviews"
+      :photoselected="isPhotoSelected"
+      :cansave="saveEnabled"
+      @mapload="mapLoad"
+      @getgeo="updateCoordinates"
+      @mapmarker="mapMarkerMoved"
+      @clearplace="clearPlace"
+      @findplace="findPlace"
+      @search="searchForLocation"
+      @photoselect="onPhotosSelect"
+      @uploadphotos="uploadPhotos"
+      @clearphotos="clearPhotos"
+      @photoclick="onPhotoClick"
+      @previewclick="onPhotoPreviewClick"
+      @onexif="onPhotoExif"
+      @missingphoto="onMissingPhoto"
+      @close="closeNote"
+      @save="saveNote"
+    />
 
-      <div class="content note-edit">
-
-        <!-- CSS Grid requires 7 elements for layout (name, date, location, places, search, map & note) -->
-
-        <div class="name">
-          <label for="noteName">Name</label>
-          <input type="text" id="noteName" v-model="note.name" maxlength="40" placeholder="Name for your note" tabindex="1">
-          <span class="input-info"><span class="char-count">{{note.name.length}}</span> (40 character limit)</span>
-        </div>
-
-        <div class="date">{{$moment(note.Created_date.toDate()).format('LLLL')}}</div>
-
-        <div class="geocoords">
-          <label for="geocords">Location:</label>
-          <span v-if="hasGeocoords" id="geocords" class="link">{{geoLat + ', ' + geoLon}}</span>
-          <span v-if="!hasGeocoords && locationDenied" class="location-denied">Location access has been denied</span>
-          <span v-if="!hasGeocoords && !locationDenied" class="location-unknown">Your location can not be determined</span>
-          <svg class="icon-small action-icon" @click="updateCoordinates(true)"><use xlink:href="dist/symbols.svg#my-location"></use></svg>
-        </div>
-
-        <div class="place">
-          <label v-if="!hasPlace(note)" for="placeName">
-            <svg class="icon-small"><use xlink:href="dist/symbols.svg#place"></use></svg>
-          </label>
-          <label v-if="hasPlace(note)" for="placeName">
-            <img :src="note.place.icon" width="24" height="24" />
-          </label>
-          <span v-if="hasGeocoords" :class="note.place && note.place._id ? 'has-place' : 'no-place'" id="placeName">{{note.place && note.place._id ? note.place.name : 'Click the button to lookup a place'}}</span>
-          <span style="float:right;">
-            <button class="small" v-if="note.place && note.place._id" @click="clearPlace()" style="margin-right: 10px;">Remove Place</button>
-            <button class="small" @click="findPlace()" tabindex="2">Lookup Places</button>
-          </span>
-        </div>
-
-        <div class="search">
-          <input
-            type="text"
-            v-model="mapSearchInput"
-            class="map-search-input"
-            placeholder="Search for location"
-            @keyup.enter="searchForLocation(mapSearchInput)"
-          >
-          <button class="icon small bg-lt" @click="searchForLocation(mapSearchInput)"><svg><use xlink:href="dist/symbols.svg#search">
-            <title>Search</title>
-          </use></svg></button>
-          <span class="map-info">Drag marker to move location.</span>
-        </div>
-
-        <gmap-map
-          ref="NoteMap"
-          :center="{'lat':geoLat,'lng':geoLon}"
-          :zoom="15"
-          style="width:100%;  height: 150px;"
-        >
-          <gmap-marker
-            ref="myMarker"
-            :draggable="true"
-            @dragend="mapMarkerMoved"
-            :position="{'lat':note.geocode.latitude, 'lng':note.geocode.longitude}"></gmap-marker>
-        </gmap-map>
-
-        <div class="note-input">
-          <textarea id="noteNote" v-model="note.note" placeholder="Your note" tabindex="3"></textarea>
-        </div>
-
-      </div>
-
-      <div class="navigation">
-        <a @click="closeNote()">Cancel</a>
-        <a class="action-link" @click="saveNote()">Save</a>
-      </div>
-
-      <places-dialog
-        v-if="showPlacesDialog"
-        :places="places"
-        :placeName="placeName"
-        :showMore="showMoreButton"
-        v-on:select="placeSelected"
-        v-on:close="placesClose"
-        v-on:place="placeInputUpdated"
-        v-on:more="moreSelected"
-      ></places-dialog>
-
-      <modal-dialog
-        v-if="showMessage"
-        @close="showMessage = false"
-      >
-        <h3 :class="messageClass" slot="header">{{messageTitle}}</h3>
-        <div slot="body" v-html="messageBody"></div>
-      </modal-dialog>
-
-      <modal-dialog
-        v-if="showConfirm"
-        :modalType="'yesno'"
-        @close="showConfirm = false"
-        @confirm="confirmMethod()"
-      >
-        <h3 :class="'notify'" slot="header">{{confirmTitle}}</h3>
-        <div slot="body" v-html="confirmBody"></div>
-      </modal-dialog>
-
-      <div class="loading-mask" v-if="isLoading"><span>{{loadingMessage}}</span></div>
-
-    </div>
-
-    <div v-if="device === 'mobile'" class="mobile">
+    <!-- Start mobile view -->
+    <div class="mobile" v-if="device === 'mobile' && !showPhotoEdit">
 
       <!-- Name, Date & Map settings -->
-      <div :class="'app-container' + (mode === 'new' ? ' new' : ' edit')" v-if="activeView === 'edit-name'">
-
-        <nav class="head">
-          <h2>{{mode === 'edit' ? 'Note - Edit' : 'Note - Create'}}</h2>
-          <span class="button-bar">
-            <button class="icon" @click="activeView = 'edit-note'"><svg><use xlink:href="dist/symbols.svg#arrow-forward">
-              <title>Next</title>
-            </use></svg></button>
-            <button v-if="saveEnabled" class="icon" @click="saveNote()"><svg><use xlink:href="dist/symbols.svg#save">
-              <title>Save</title>
-            </use></svg></button>
-          </span>
-        </nav>
-
-        <div class="content name-edit">
-
-          <!-- CSS Grid requires 6 elements for layout (name, date, location, places, search, map) -->
-
-          <div class="name">
-            <label v-if="mode === 'edit'" for="noteName" style="font-size: smaller;">Name</label>
-            <input type="text" id="noteName" v-model="note.name" maxlength="40" placeholder="Name for your note" tabindex="1">
-            <span style="font-size: smaller;">
-              Maximum 40 characters (<span :class="note.name.length < 30 ? 'char-count' : 'char-count-close'">{{40 - note.name.length}}</span> remaining)
-            </span>
-          </div>
-
-          <div class="date">{{$moment(note.Created_date.toDate()).format('LLLL')}}</div>
-
-          <div class="geocoords">
-            <label for="geocords">Location:</label>
-            <span v-if="hasGeocoords" id="geocords" class="link">{{geoLat + ', ' + geoLon}}</span>
-            <span v-if="!hasGeocoords && locationDenied" class="location-denied">Location access has been denied</span>
-            <span v-if="!hasGeocoords && !locationDenied" class="location-unknown">Your location can not be determined</span>
-            <button class="icon small bg-lt action-icon" @click="updateCoordinates(true)">
-              <svg class="icon-small"><use xlink:href="dist/symbols.svg#my-location"></use></svg>
-            </button>
-          </div>
-
-          <div class="place">
-            <svg v-if="!hasPlace(note)" class="icon-small"><use xlink:href="dist/symbols.svg#place"></use></svg>
-            <img v-if="hasPlace(note)" :src="note.place.icon" class="icon-small" style="vertical-align:unset;" />
-            <span :class="hasPlace(note) ? 'has-place' : 'no-place'" id="placeName">{{note.place && note.place._id ? note.place.name : 'Click the button to add a place'}}</span>
-            <span style="float:right;">
-              <button v-if="hasPlace(note)" @click="clearPlace()" style="margin-right: 10px;">Remove</button>
-              <button v-if="hasPlace(note)" @click="findPlace()" tabindex="2">Change</button>
-              <button v-if="!hasPlace(note)" @click="findPlace()" tabindex="2">Lookup Places</button>
-            </span>
-          </div>
-
-          <div class="search">
-            <input
-              type="text"
-              v-model="mapSearchInput"
-              class="map-search-input"
-              placeholder="Search for location"
-              @keyup.enter="searchForLocation(mapSearchInput)"
-            >
-            <button class="icon small bg-lt" @click="searchForLocation(mapSearchInput)"><svg><use xlink:href="dist/symbols.svg#search">
-              <title>Search</title>
-            </use></svg></button>
-            <span class="map-info">Drag marker to move location.</span>
-          </div>
-
-          <gmap-map
-            ref="NoteMap"
-            :center="{'lat':geoLat,'lng':geoLon}"
-            :zoom="15"
-            style="width:100%;  height:100%;"
-          >
-            <gmap-marker
-              ref="myMarker"
-              :draggable="true"
-              @dragend="mapMarkerMoved"
-              :position="{'lat':geoLat, 'lng':geoLon}"></gmap-marker>
-          </gmap-map>
-
-        </div>
-
-        <div class="navigation">
-          <a @click="closeNote()">Cancel</a>
-          <a class="action-link" @click="activeView = 'edit-note'">Next</a>
-        </div>
-
-      </div>
+      <keep-alive>
+        <note-edit-mobile
+          v-if="activeView === 'edit-name'"
+          :note="note"
+          :mode="mode"
+          :previews="photoPreviews"
+          :photoselected="isPhotoSelected"
+          :cansave="saveEnabled"
+          @next="activeView = 'edit-note'"
+          @mapload="mapLoad"
+          @getgeo="updateCoordinates"
+          @mapmarker="mapMarkerMoved"
+          @clearplace="clearPlace"
+          @findplace="findPlace"
+          @search="searchForLocation"
+          @photoselect="onPhotosSelect"
+          @uploadphotos="uploadPhotos"
+          @clearphotos="clearPhotos"
+          @photoclick="onPhotoClick"
+          @previewclick="onPhotoPreviewClick"
+          @onexif="onPhotoExif"
+          @missingphoto="onMissingPhoto"
+          @close="closeNote"
+          @save="saveNote"
+        />
+      </keep-alive>
 
       <!-- Note input -->
-      <div :class="'app-container' + (mode === 'new' ? ' new' : ' edit')" v-if="activeView === 'edit-note'">
+      <div
+        :class="'app-container' + (mode === 'new' ? ' new' : ' edit')"
+        v-if="activeView === 'edit-note'"
+      >
 
         <nav class="head">
           <h2>{{mode === 'edit' ? 'Note - Edit' : 'Note - Create'}}</h2>
@@ -234,38 +87,61 @@
         </div>
       </div>
 
-      <places-dialog
-        v-if="showPlacesDialog"
-        :places="places"
-        :placeName="placeName"
-        :showMore="showMoreButton"
-        v-on:select="placeSelected"
-        v-on:close="placesClose"
-        v-on:place="placeInputUpdated"
-        v-on:more="moreSelected"
-      ></places-dialog>
-
-      <modal-dialog
-        v-if="showMessage"
-        @close="showMessage = false"
-      >
-        <h3 :class="messageClass" slot="header">{{messageTitle}}</h3>
-        <div slot="body" v-html="messageBody"></div>
-      </modal-dialog>
-
-      <modal-dialog
-        v-if="showConfirm"
-        :modalType="'yesno'"
-        @close="showConfirm = false"
-        @confirm="confirmMethod()"
-      >
-        <h3 :class="'notify'" slot="header">{{confirmTitle}}</h3>
-        <div slot="body" v-html="confirmBody"></div>
-      </modal-dialog>
-
-      <div class="loading-mask" v-if="isLoading"><span>{{loadingMessage}}</span></div>
-
     </div>
+    <!-- Dynamically loaded content -->
+
+    <photo-edit
+      v-if="showPhotoEdit"
+      :target="activePhoto"
+      :loadedAsSubcomponent="true"
+      @close="showPhotoEdit = false"
+      @save="onPhotoSave"
+      @photodelete="onPhotoDelete"
+    ></photo-edit>
+
+    <photo-viewer
+      v-if="showPreviewPhoto"
+      :path="selectedPreview.path"
+      @close="showPreviewPhoto = false"
+    />
+
+    <exif-viewer
+      v-if="showExifData"
+      :exifs="photoExifs"
+      @selectexif="onExifDataSelect"
+      @close="showExifData = false"
+    />
+
+    <places-dialog
+      v-if="showPlacesDialog"
+      :places="places"
+      :placeName="placeName"
+      :showMore="showMoreButton"
+      v-on:select="placeSelected"
+      v-on:close="placesClose"
+      v-on:place="placeInputUpdated"
+      v-on:more="moreSelected"
+    ></places-dialog>
+
+    <modal-dialog
+      v-if="showMessage"
+      @close="showMessage = false"
+    >
+      <h3 :class="messageClass" slot="header">{{messageTitle}}</h3>
+      <div slot="body" v-html="messageBody"></div>
+    </modal-dialog>
+
+    <modal-dialog
+      v-if="showConfirm"
+      :modalType="'yesno'"
+      @close="showConfirm = false"
+      @confirm="confirmMethod()"
+    >
+      <h3 :class="'notify'" slot="header">{{confirmTitle}}</h3>
+      <div slot="body" v-html="confirmBody"></div>
+    </modal-dialog>
+
+    <div class="loading-mask" v-if="isLoading"><span>{{loadingMessage}}</span></div>
 
   </div>
 </template>
@@ -273,7 +149,13 @@
 <script>
   import PlacesDialog from '@/components/PlacesDialog'
   import ModalDialog from '@/components/ModalDialog'
+  import PhotoScroller from '@/components/PhotoScroller'
+  import NoteEditDesktop from '@/components/NoteEditDesktop'
+  import NoteEditMobile from '@/components/NoteEditMobile'
   import {GmapMap, GmapMarker} from 'vue2-google-maps'
+  import PhotoEdit from './PhotoEdit'
+  import PhotoViewer from '@/components/PhotoViewer'
+  import ExifViewer from '@/components/ExifViewer'
   //import { mapGetters } from 'vuex'
 
   let vm,
@@ -281,7 +163,14 @@
   export default {
 
     components: {
-      PlacesDialog, ModalDialog
+      PlacesDialog,
+      ModalDialog,
+      PhotoEdit,
+      PhotoScroller,
+      PhotoViewer,
+      ExifViewer,
+      NoteEditDesktop,
+      NoteEditMobile
     },
 
     data() {
@@ -294,20 +183,34 @@
         mode:'',
         places:[],
         placeName:'',
-        note:{name:'',note:'',geocode:{latitude:0,longitude:0},Created_date:{toDate(){}}}, // need enough default values for template
+        note:{name:'',note:'',photos:[],geocode:{latitude:0,longitude:0},Created_date:{toDate(){return new Date()}}}, // need enough default values for template
         placesService: null,
         showPlacesDialog: false,
         showMoreButton: false,
         pagination: null,
+        mapSearchInput: '',
+        isPhotoSelected: false,
+        showPhotoEdit: false,
+        photoPreviews:[],
+        // message dialog
         showMessage: false,
         messageClass: 'notify',
         messageTitle: '',
         messageBody: '',
+        // confirm dialog
         showConfirm: false,
         confirmTitle: '',
         confirmBody: '',
         confirmMethod: null,
-        mapSearchInput: ''
+        // photo preview
+        showPreviewPhoto: false,
+        selectedPreview: null,
+        // photo exif
+        showExifData: false,
+        photoExifs: [],
+        imageInput: null,
+        photoFileList: null,
+        exifDelayTimer: NaN
       }
     },
 
@@ -343,16 +246,39 @@
       },
 
       saveEnabled() {
-        return ((this.note.name && this.note.note) && this.note.name.length > 0 && this.note.note.length > 0);
+        return !!this.note.name && !!this.note.note && this.note.name.length > 0 && this.note.note.length > 0;
       },
 
       activeNote: function() {
         return this.$store.state.notes.activeNote;
       },
 
+      activePhoto() {
+        return this.$store.state.photos.activePhoto;
+      },
+
+      activePhotos() {
+        return this.$store.state.photos.activePhotos;
+      },
+
       notebookNoteCount: function() {
         return this.$store.state.notes.notebookNoteCount;
       },
+
+      photoBaseUrl() {
+        return this.$store.state.photos.photoBaseUrl;
+      },
+
+      noteDate: { // Firestore's Timestamp class requires transformation
+        get() {
+          return this.note.Created_date.toDate().toISOString();
+        },
+        set(date) {
+          if (!date) return;
+          date = new Date(date);
+          this.note.Created_date = this.$firebase.firebase_.firestore.Timestamp.fromDate(date);
+        }
+      }
 
       // Setup getters from store
       //...mapGetters('notes', ['activeNote','notebookNoteCount'])
@@ -362,14 +288,14 @@
       '$store.state.user.userAuthenticating': (val, oldVal) => {
         //console.log(`NoteEdit.watch($store.state.user.userAuthenticating) val [${val}] oldVal [${oldVal}]`);
         if (!val && !!vm.$store.state.user.user.uid) {
-          vm.initNote();
+          vm.init();
         }
       }
     },
 
     beforeRouteEnter(toRoute, fromRoute, next) {
       //console.log('NoteEdit.beforeRouteEnter()');
-      if (fromRoute.name) {
+      if (fromRoute.name && fromRoute.fullPath.indexOf('note-edit') === -1) {
         closeRoute = fromRoute.fullPath;
       }
       next();
@@ -380,26 +306,18 @@
       vm = this;
       // make sure user isn't being authenticated
       if (!vm.$store.state.user.userAuthenticating) {
-        vm.initNote();
+        vm.init();
         // Authentication watcher above will trigger init
       }
       // get google reference
       vm.$gmapApiPromiseLazy().then((google) => {
         vm.google = google;
       });
-      // get places service
-      try {
-        vm.$refs.NoteMap.$mapPromise.then((map) => {
-          vm.placesService = new vm.google.maps.places.PlacesService(map);
-        });
-      } catch (e) {
-        console.warn('Failied to get Places Service!');
-      }
     },
 
     methods:{
 
-      initNote() {
+      init() {
         //console.log(`NoteEdit.initNote()`);
         // Check route to determine if note is new
         if (vm.$route.name === 'note-new' || vm.$route.name === 'note-new-mobile') {
@@ -436,8 +354,10 @@
                 }
               })
               .catch(vm.handleError);
+            // get note photos
+            this.$store.dispatch('photos/getNotePhotos', vm.$route.params.note_id)
+              .catch(this.handleError)
           } else {
-            console.warn('NoteEdit.initNote() no activeNote');
             Object.assign(vm.note, vm.activeNote);
             vm.isLoading = false;
           }
@@ -450,16 +370,21 @@
         }
       },
 
+      mapLoad(map) {
+        //console.log(`NoteEdit.mapLoad()`);
+        vm.placesService = new vm.google.maps.places.PlacesService(map);
+      },
+
       updateCoordinates(userAction) {
         //console.log(`NoteEdit.updateCoordinates() userAction: ${userAction}`);
+        // [TODO Switch to using Utils version of this function]
         navigator.geolocation.getCurrentPosition(
           (position) => {
             //console.dir(position);
-            let latlonObj = {
+            vm.note.geocode = {
               latitude: Number(position.coords.latitude.toFixed(7)),
               longitude: Number(position.coords.longitude.toFixed(7))
             };
-            vm.note.geocode = latlonObj;
             // clear any loaded places
             vm.places = [];
           },
@@ -488,28 +413,48 @@
       },
 
       saveNote() {
-        //console.log(`NoteEdit.saveNote()`);
-        //vm.$emit('save', vm.note);
-        vm.loadingMessage = 'Saving Note...';
+        //console.log(`NoteEdit.saveNote() `);
         vm.isLoading = true;
+        const dispatchMethod = (vm.mode === 'edit') ? 'notes/updateActiveNote' : 'notes/saveActiveNote';
+        vm.loadingMessage = 'Saving Note...';
+        vm.$store.dispatch(dispatchMethod, vm.note)
+          .then((note) => {
+            this.note = {...note};
+            if (this.photoFileList && this.photoFileList.length > 0) {
+              vm.savePhotos()
+                .then(vm.afterSaveNote);
+            } else {
+              vm.afterSaveNote();
+            }
+          })
+          .catch(vm.handleError);
+      },
+
+      savePhotos() { // Returns Promise
+        //console.log(`NoteEdit.savePhotos()`);
+        vm.isLoading = true;
+        vm.loadingMessage = 'Saving Photos...';
+        return vm.$store.dispatch('photos/addPhotos', {files:this.imageInput.files, note_id: vm.activeNote._id})
+          .then((results) => {
+            vm.loadingMessage = 'Updating Note...';
+            // update notes photos array with photo data
+            vm.note.photos = vm.$store.getters['photos/photosSummary'];
+            return vm.$store.dispatch('notes/updateNotePhotos', vm.note);
+          })
+          .catch(vm.handleError);
+      },
+
+      afterSaveNote() {
+        //console.log(`NoteEdit.afterSaveNote()`);
+        vm.isLoading = false;
         if (vm.mode === 'edit') {
-          vm.$store.dispatch('notes/updateActiveNote', vm.note)
-            .then(() => {
-              vm.isLoading = false;
-              if (closeRoute.includes(vm.activeNote._id)) {
-                vm.$router.push(closeRoute);
-              } else {
-                vm.$router.push('/note/' + vm.activeNote._id);
-              }
-            })
-            .catch(vm.handleError);
-        } else if (vm.mode === 'new') {
-          vm.$store.dispatch('notes/saveActiveNote', vm.note)
-            .then(() => {
-              vm.isLoading = false;
-              vm.$router.push('/note/' + vm.activeNote._id);
-            })
-            .catch(vm.handleError);
+          if (closeRoute.includes(vm.activeNote._id)) {
+            vm.$router.push(closeRoute);
+          } else {
+            vm.$router.push('/note/' + vm.activeNote._id);
+          }
+        } else {
+          vm.$router.push('/note/' + vm.activeNote._id);
         }
       },
 
@@ -672,6 +617,109 @@
         })
       },
 
+      onPhotosSelect(evnt) {
+        //console.log(`NoteEditor.onPhotosSelect() photos ${evnt.target.files.length}`);
+        this.photoFileList = evnt.target.files;
+        this.imageInput = evnt.target;
+        this.isPhotoSelected = this.photoFileList.length > 0;
+        this.photoPreviews = [];
+        this.photoExifs = [];
+        if (this.isPhotoSelected  && !!window.URL) {
+          const files = Array.from(this.photoFileList);
+          files.forEach((photo, index) => {
+            let img = {
+              path: window.URL.createObjectURL(photo),
+              name: photo.name,
+              index: index
+            };
+            this.photoPreviews.push(img)
+          })
+        }
+      },
+
+      clearPhotos() {
+        //console.log(`NoteEditor.clearPhotos()`);
+        this.imageInput.value = null;
+        this.isPhotoSelected = false;
+        this.photoPreviews = [];
+        this.photoFileList = null;
+      },
+
+      uploadPhotos() {
+        //console.log(`NoteEditor.uploadPhotos()`);
+        this.savePhotos()
+          .then(note => {
+            // returns current note reference
+            this.clearPhotos();
+            this.isLoading = false;
+          })
+      },
+
+      onPhotoClick(photo) {
+        //console.log(`NoteEditor.onPhotoClick()`);
+        this.$store.commit('photos/setActivePhotoById', photo.id);
+        this.showPhotoEdit = true;
+        //this.$router.push(`${this.$route.path}/photo-edit/${photo.id}`);
+      },
+
+      onPhotoPreviewClick(preview) {
+        //console.log(`NoteEditor.onPhotoPreviewClick() path [${preview.path}] ${typeof(preview.path)}`);
+        this.selectedPreview = preview;
+        this.showPreviewPhoto = true;
+      },
+
+      onPhotoExif(data, preview) {
+        //console.log(`NoteEditor.onPhotoExif() [${preview.path}]`);
+        if (this.photoExifs.findIndex(exif => exif.index === preview.index) === -1) {
+          this.photoExifs.push(Object.assign({}, data, preview));
+          clearTimeout(this.exifDelayTimer);
+          // set a delay so all image exif data can be loaded before showing dialog
+          this.exifDelayTimer = setTimeout(() => {
+            this.showExifData = true;
+          }, 500)
+        }
+      },
+
+      onExifDataSelect(data) {
+        //console.log(`NoteEditor.onExifDataSelect()`);
+        if (data.datetime) {
+          this.note.Created_date = this.$firebase.firebase_.firestore.Timestamp.fromDate(data.datetime);
+        }
+        if (data.geocode) {
+          this.note.geocode = data.geocode;
+        }
+      },
+
+      onPhotoSave(photo) {
+        //console.log(`NoteEditor.onPhotoSave()`);
+        this.note.photos = vm.$store.getters['photos/photosSummary'];
+        vm.$store.dispatch('notes/updateNotePhotos', vm.note);
+      },
+
+      onPhotoDelete(photo) {
+        console.log(`NoteEditor.onPhotoDelete()`);
+        // activeNote will have been updated already
+        this.note.photos = this.activeNote.photos;
+      },
+
+      onMissingPhoto(photo) {
+        //console.log(`NoteEditor.onMissingPhoto()`);
+        this.$store.dispatch('photos/checkMissingPhoto', {note_id: this.note._id, photo_id: photo.id})
+          .then(success => {
+            if (success) {
+              //console.log('PhotoScroller.onPhotoError() photo exists');
+            }
+            else {
+              //console.log('PhotoScroller.onPhotoError() no photo');
+              this.note.photos = this.$store.getters['photos/photosSummary'];
+              this.$store.dispatch('notes/updateNotePhotos', this.note)
+                .then(console.log)
+                .catch(this.handleError)
+            }
+          })
+          .catch(this.handleError)
+      },
+
       showServiceFailure() {
         //console.log(`NoteEditor.showServiceFailure()`);
         vm.messageTitle = 'Service Failure';
@@ -696,142 +744,8 @@
 </script>
 
 <style lang="scss" scoped>
-  .desktop {
-    .content {
-      padding: 8px 20px;
-      display: grid;
-      grid-template-rows: 45px 30px 35px 35px 30px 155px auto;
-    }
-    .content > * {
-      margin-bottom: 10px;
-    }
-    .content input {
-      width: 60%;
-    }
-    .input-info {
-      font-size: smaller;
-    }
-    .char-count {
-      color: orangered;
-    }
-    .geocoords, .place {
-      height: 30px;
-      line-height: 30px;
-      width: 100%;
-    }
-    .place button {
-      vertical-align: top;
-    }
-    .place svg {
-      fill: #ed453b;
-    }
-    span.no-place {
-      font-size: smaller;
-      color: #999999;
-    }
-    span.has-place {
-      display: inline-block;
-      max-width: 340px;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      vertical-align: text-bottom;
-    }
-    .search {
-      margin-bottom: 0;
-    }
-    .search input {
-      display: inline-block;
-      width: 250px;
-    }
-    .map-info {
-      float: right;
-      font-size: smaller;
-      color: #888;
-      margin-top: 8px;
-    }
-    .content textarea {
-      width: 100%;
-      heigth: 100%;
-      overflow: auto;
-    }
-    #noteNote {
-      height: 100%;
-    }
-    .content > *:last-child {
-      margin-bottom: 0;
-    }
-  }
-  .mobile {
 
-    .app-container.edit .name-edit {
-      display: grid;
-      grid-template-rows: 120px 40px 50px 60px 40px auto;
-    }
-    .app-container.new .name-edit {
-      display: grid;
-      grid-template-rows: 90px 40px 50px 60px 40px auto;
-    }
-    #noteName {
-      font-size: 1.8rem;
-    }
-    .content {
-      padding: 20px;
-    }
-    .content > * {
-      margin-bottom: 10px;
-    }
-    .content input {
-      width: 100%;
-    }
-    .char-count {
-      color: darkgreen;
-    }
-    .char-count-close {
-      color: orangered;
-    }
-    .geocoords, .place {
-      height: 50px;
-      line-height: 50px;
-      width: 100%;
-    }
-    span.no-place {
-      font-size: smaller;
-      color: #999999;
-    }
-    span.has-place {
-      display: inline-block;
-      max-width: 340px;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      vertical-align: text-bottom;
-    }
-    .place button {
-      vertical-align: top;
-    }
-    .geocoords button {
-      margin-top: 10px;
-    }
-    .place svg {
-      fill: #ed453b;
-    }
-    .search {
-      margin-bottom: 0;
-    }
-    .search input.map-search-input {
-      display: inline-block;
-      line-height: 1em;
-      font-size: 1em;
-      width: 250px;
-      min-width: 250px;
-    }
-    .map-info {
-      float: right;
-      font-size: smaller;
-      color: #888;
-      margin-top: 8px;
-    }
+  .mobile {
     #noteNote {
       height: 100%;
       font-size: 1.8rem;

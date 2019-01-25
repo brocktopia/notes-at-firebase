@@ -12,6 +12,10 @@ service cloud.firestore {
       allow read: if isSignedIn();
       allow write: if isOwner(userId)
     }
+    match /users/{userId}/notes/{noteId}/photos/{photoId} {
+      allow read: if isSignedIn();
+      allow write: if isOwner(userId)
+    }
 
     /// Functions ///
 

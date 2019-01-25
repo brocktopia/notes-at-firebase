@@ -7,7 +7,8 @@ export default {
     all:[],
     activeNotebook:{},
     activeNotebookView: 'list', // list | map | full,
-    activeNotebookScrollPosition: 0
+    activeNotebookScrollPosition: 0,
+    activeNotebookSort: 'latest' // latest | first
   },
 
   getters: {},
@@ -159,15 +160,33 @@ export default {
 
     deleteAll(state) {
       //console.log('store.mutations.notebooks.deleteAll()');
-      state.notebookNotes = [];
-      state.notes = [];
-      state.notesCount = 0;
-      state.activeNote = null;
+      state.all = [];
+      state.activeNotebook = null;
+      state.activeNotebookScrollPosition = 0;
     },
 
     setNotebookView(state, mode = 'list') { // default to list
       //console.log(`store.mutations.notebooks.setNotebookView() mode [${mode}]`);
       state.activeNotebookView = mode;
+    },
+
+    sortNotebooks(state, sort) {
+      //console.log(`store.mutations.notebooks.sortNotebooks() sort [${sort}]`);
+      let sortFunction;
+      if (sort === 'first') {
+        sortFunction = (nb1, nb2) => {
+          return (nb1.Created_date.seconds > nb2.Created_date.seconds) ? 1 : -1;
+        }
+      } else if (sort === 'latest') {
+        sortFunction = (nb1, nb2) => {
+          return (nb1.Created_date.seconds < nb2.Created_date.seconds) ? 1 : -1;
+        }
+      } else {
+        console.warn(`store.mutations.notebooks.sortNotebooks() No handler for sort [${sort}]`);
+        return;
+      }
+      state.all.sort(sortFunction);
+      state.activeNotebookSort = sort;
     },
 
     setScrollPosition(state, position) {

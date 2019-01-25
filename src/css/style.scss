@@ -14,6 +14,7 @@ html, body {
   background-color: #eeeeee;
   color: #2c3e50;
   height: 100%;
+  overflow-y: hidden;
 }
 h1, h2 {
   font-weight: normal;
@@ -42,7 +43,7 @@ a, .link {
     height: calc(100vh - 100px);
   }
 }
-input {
+input:not([type=radio]) {
   min-width: 200px;
 }
 input, textarea, img {
@@ -325,7 +326,7 @@ button:active {
     width: 36px;
     height: 36px;
   }
-  button:not(.icon, .gm-control-active) {
+  button:not(.icon):not(.gm-control-active) {
     white-space: nowrap !important;
     font-size: 1.2rem !important;
     padding: 0.5rem 1rem !important;
@@ -339,7 +340,7 @@ button:active {
     .content {
       height: calc(100vh - 120px);
     }
-    input:not([type=button]), textarea {
+    input:not([type=button]):not([type=radio]), textarea {
       padding-left: 5px;
       //text-size-adjust: 150%;
       font-size: 1.8rem;

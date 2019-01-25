@@ -34,6 +34,17 @@
 
       <p class="note">{{note.note}}</p>
 
+      <p class="photos" v-for="photo in note.photos">
+        <span v-if="!!photo.name" class="photo-name">{{photo.name}}</span>
+        <img
+          :key="photo.id"
+          :src="photoUrl(photo, 'medium')"
+          class="note-photo"
+          @click="photoSelect(photo)"
+        />
+        <span v-if="!!photo.caption" class="photo-caption">{{photo.caption}}</span>
+      </p>
+
     </div>
 
   </div>
@@ -42,6 +53,7 @@
 
 <script>
   import googleConfig from '@/google-maps-config'
+  import { mapGetters } from 'vuex'
 
   export default {
 
@@ -80,7 +92,9 @@
         url += `&markers=${loc}`;
         url += `&key=${googleConfig.key}`;
         return url
-      }
+      },
+
+      ...mapGetters('photos', ['photoUrl'])
 
     },
 
@@ -95,11 +109,16 @@
         this.$emit('select', this.note);
       },
 
+      photoSelect(photo){
+        //console.log(`NoteListItem.photoSelect() note [${this.note._id}] photo [${photo.id}]`);
+        const data = {note_id: this.note._id, photo_id: photo.id};
+        this.$emit('photoselect', data);
+      },
+
       mapSelect() {
         //console.log(`NoteListItem.mapSelect()`);
         this.$emit('mapselect', this.note);
       }
-
     }
 
   }
@@ -111,9 +130,11 @@
     padding: 0 20px 10px;
     overflow-x: hidden;
   }
+
   .body > div {
     margin: 10px 0;
   }
+
   header.note-head {
     background-color: #666;
     padding: 0 10px;
@@ -130,19 +151,23 @@
       cursor: pointer;
     }
   }
+
   .note-view-map {
     display: inline-block;
     float: right;
     margin: 10px 0;
     cursor: pointer;
   }
+
   .date, .geocoords, .places {
     float: left;
     clear: left;
   }
+
   .places img {
     vertical-align: middle;
   }
+
   .places .placeName {
     display: inline-block;
     vertical-align: middle;
@@ -151,9 +176,30 @@
     white-space: nowrap;
     text-overflow: ellipsis;
   }
+
   .note {
     border: 1px solid transparent;
     white-space: pre-wrap;
     clear: both;
   }
+
+  .note-photo {
+    display: block;
+    margin: 0 auto;
+  }
+
+  .photo-name {
+    color:#666;
+    width: 100%;
+    display: inline-block;
+    text-align: center;
+  }
+
+  .photo-caption {
+    width: 100%;
+    display: inline-block;
+    margin-top: 8px;
+    padding: 0 40px;
+  }
+
 </style>

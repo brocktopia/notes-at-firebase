@@ -2,7 +2,8 @@
 
 > A note taking app that retrieves and stores location data for each note. This is a fork of 
 [github.com/brocktopia/notes-at-vuex](https://github.com/brocktopia/notes-at-vuex) implemented on the 
-Firebase platform.
+Firebase platform. This release adds the ability to upload photos to Google Cloud Storage and uses 
+Google Cloud Functions to process images to appropriate sizes. 
 
 ## Dependencies
 
@@ -46,6 +47,18 @@ export default {
   projectId: "YOUR_PROJECT_ID",
   storageBucket: "YOUR_PROJECT_ID.appspot.com",
   messagingSenderId: "YOUR_MESSAGING_SEND_ID"
+}
+```
+
+Firebase CORS configuration can be handled with [.cors-json-file.json](cors-json-file.json). In order to get access to 
+image EXIF data you will need to configure permissions for Google Storage. See this 
+[documentation](https://cloud.google.com/storage/docs/configuring-cors) for details.
+```json
+{
+  "origin": [DOMAIN_TO_WHITELIST],
+  "responseHeader": ["Content-Type"],
+  "method": ["GET", "HEAD", "DELETE"],
+  "maxAgeSeconds": 3600
 }
 ```
 

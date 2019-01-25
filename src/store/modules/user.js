@@ -14,7 +14,7 @@ export default {
       //console.log('store.actions.user.loginUser()');
       let userRef = this.$fbdb.collection('users').doc(user.uid);
       // create a user data object to store in db and check against auth user data
-      let userData = {
+      let authData = {
         'displayName':user.displayName,
         'email':user.email,
         'emailVerified':user.emailVerified,
@@ -29,7 +29,7 @@ export default {
         .then((docSnapshot) => {
           if (docSnapshot.exists) {
             // check auth data for changes
-            let matched = ((u1, u2) => {
+            let matched = ((u1, u2) => { // anonymous function
               for (var x in u1) {
                 if (u2.hasOwnProperty(x)) {
                   if (u1[x] != u2[x]) {
@@ -40,10 +40,10 @@ export default {
                 }
               }
               return true;
-            })(docSnapshot.data(), userData);
-            // update user if there are changes
+            })(docSnapshot.data(), authData); // compare auth data to stored user data
+            // update user data if there are changes
             if (!matched) {
-              return userRef.set(userData, {merge: true})
+              return userRef.set(authData, {merge: true})
                 .then(() => {
                   return userRef.get()
                     .then((docSnapshot) => {
@@ -57,7 +57,7 @@ export default {
               return commit('setUser', docSnapshot.data());
             }
           } else {
-            return userRef.set(userData)
+            return userRef.set(authData)
               .then(() => {
                 return userRef.get()
                   .then((docSnapshot) => {

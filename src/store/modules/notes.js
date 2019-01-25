@@ -1,3 +1,19 @@
+function deepClone(store) {
+  if (!store) {
+    return store;
+  }
+  // this will do a deep clone as long as the object contains no self referencing objects
+  let data = Array.isArray(store) ? [] : {};
+  Object.keys(store).forEach(key => {
+    if (typeof(store[key]) === 'object' && !!store[key].toDate) {
+      // don't mess with timestamps
+      data[key] = store[key];
+    } else {
+      data[key] = (typeof(store[key]) === 'object') ? deepClone(store[key]) : store[key];
+    }
+  });
+  return data;
+}
 
 export default {
 
@@ -7,7 +23,8 @@ export default {
     all:[],
     notebookNotes:[],
     activeNote:{},
-    noteCount:NaN
+    noteCount:NaN,
+    activeNotebookNotesSort:'latest'
   },
 
   getters: {
@@ -41,13 +58,14 @@ export default {
         .catch(err => {throw(err)})
     },
 
-    getNote({commit}, id) {
+    getNote({commit, state}, id) {
       //console.log(`store.actions.notes.getNote() [${id}]`);
       let noteRef = this.$fbdb.collection('users').doc(this.state.user.user.uid).collection('notes').doc(id);
       return noteRef.get()
         .then((docSnapshot) => {
           if (docSnapshot.exists) {
-            return commit('setActiveNote', Object.assign({'_id':docSnapshot.id}, docSnapshot.data()) || {});
+            commit('setActiveNote', Object.assign({'_id':docSnapshot.id}, docSnapshot.data()) || {});
+            return Promise.resolve(state.activeNote)
           }
         })
         .catch(err => {throw(err)})
@@ -160,7 +178,8 @@ export default {
               .then((docSnapshot) => {
                 let noteData = Object.assign({'_id':docSnapshot.id}, docSnapshot.data());
                 commit('addNotebookNote', noteData);
-                return commit('updateActiveNote', noteData)
+                commit('updateActiveNote', noteData);
+                return Promise.resolve(state.activeNote);
               })
               .catch(err => {throw(err)})
           }
@@ -170,24 +189,88 @@ export default {
 
     updateActiveNote({commit, state}, note) { // Update existing note
       //console.log('store.actions.notes.updateActiveNote()');
-      let noteRef = this.$fbdb.collection('users').doc(this.state.user.user.uid).collection('notes').doc(note._id);
+      if (state.activeNote._id !== note._id) {
+        return Promise.reject('The _id for the note data does not match the active note')
+      }
+      const noteRef = this.$fbdb.collection('users').doc(this.state.user.user.uid).collection('notes').doc(note._id);
       return noteRef.set(note)
         .then(() => {
           return noteRef.get()
             .then((docSnapshot) => {
-              return commit('updateActiveNote', Object.assign({'_id':docSnapshot.id}, docSnapshot.data()))
+              commit('updateActiveNote', Object.assign({'_id':docSnapshot.id}, docSnapshot.data()))
+              return Promise.resolve(state.activeNote);
             })
             .catch(err => {throw(err)})
         })
         .catch(err => {throw(err)})
     },
 
-    delete({commit}, note_id) {
+    updateNotePhotos({commit, state}, note) {
+      //console.log('store.actions.notes.updateNotePhotos()');
+      const noteRef = this.$fbdb.collection('users').doc(this.state.user.user.uid).collection('notes').doc(note._id);
+      return noteRef.update({photos: note.photos})
+        .then(resp => {
+          commit('updateActiveNote', note);
+          return Promise.resolve(state.activeNote);
+        })
+        .catch(err => {throw(err)})
+    },
+
+    removeNotePhoto({state, commit, dispatch}, {note_id, photo_id}) {
+      //console.log(`store.actions.notes.removeNotePhoto() note [${note_id}] photo [${photo_id}]`);
+      if (state.activeNote._id === note_id) { // otherwise no reference to a note instance
+        const note = deepClone(state.activeNote);
+        // remove photo from array
+        const photo_index = note.photos.findIndex(p => p.id === photo_id);
+        if (photo_index > -1) {
+          note.photos.splice(photo_index, 1);
+          return dispatch('updateNotePhotos', note);
+        } else {
+          return Promise.reject(`Could not find photo id [${photo_id}] in note photos.`);
+        }
+      } else {
+        // If photos are ever editable in a context without note being loaded this may need to change
+        return Promise.reject(`Note id [${note_id}] does note match active note id [${state.activeNote._id}].`);
+      }
+    },
+
+    delete({commit, dispatch}, note_id) {
       //console.log('store.actions.notes.delete()');
       let noteRef = this.$fbdb.collection('users').doc(this.state.user.user.uid).collection('notes').doc(note_id);
-      return noteRef.delete()
-        .then(() => {
-          return commit('delete', note_id);
+      // check for photos
+      return noteRef.collection('photos').get()
+        .then(querySnapshot => {
+          if (querySnapshot.empty) {
+            return noteRef.delete()
+              .then(() => {
+                commit('delete', note_id);
+                return Promise.resolve(true);
+              })
+          } else {
+            // delete photos firstgit
+            return dispatch('photos/deletePhotos', querySnapshot, {root:true})
+              .then(response => {
+                console.log(`store.actions.notes.delete() delete photos response [${response}]`);
+                return noteRef.delete()
+                  .then(() => {
+                    commit('delete', note_id);
+                    return Promise.resolve(true);
+                  })
+              })
+          }
+        })
+        .catch(err => {throw(err)})
+    },
+
+    deleteNotebookNotes({commit, state, dispatch}) {
+      console.log('store.actions.notes.deleteNotebookNotes()');
+      let deletes = [];
+      state.notebookNotes.forEach(note => {
+        deletes.push(dispatch('delete', note._id));
+      });
+      return Promise.all(deletes)
+        .then(resp => {
+          return Promise.resolve(true);
         })
         .catch(err => {throw(err)})
     },
@@ -215,24 +298,32 @@ export default {
   },
 
   mutations: {
+
     setNotes(state, notes) {
       state.all = notes;
     },
+
     setActiveNote(state, note) {
       //console.log('store.mutations.notes.setActiveNote()');
       state.activeNote = note;
     },
+
     setNotebookNotes(state, notes) {
       //console.log('store.mutations.notes.setNotebookNotes()');
       //console.dir(notes);
       state.notebookNotes = notes;
     },
+
     addNotebookNote(state, note) {
-      state.notebookNotes.unshift(note);
+      if (state.activeNotebookNotesSort === 'latest') {
+        state.notebookNotes.unshift(note);
+      } else if (state.activeNotebookNotesSort === 'first') {
+        state.notebookNotes.push(note);
+      }
     },
+
     updateActiveNote(state, note) {
       //console.log('store.mutations.notes.updateActiveNote()');
-      //console.dir(note);
       state.activeNote = note;
       // update in notes array
       let i = state.notebookNotes.findIndex(n => n._id == note._id);
@@ -243,11 +334,33 @@ export default {
       } else {
         throw({message:'Could not find note ['+note._id+'] in notebookNotes[]'})
       }
+
     },
+
+    sortNotebookNotes(state, sort) {
+      //console.log(`store.mutations.notes.sortNotebookNotes() sort [${sort}]`);
+      let sortFunction;
+      if (sort === 'first') {
+        sortFunction = (n1, n2) => {
+          return (n1.Created_date.seconds > n2.Created_date.seconds) ? 1 : -1;
+        }
+      } else if (sort === 'latest') {
+        sortFunction = (n1, n2) => {
+          return (n1.Created_date.seconds < n2.Created_date.seconds) ? 1 : -1;
+        }
+      } else {
+        console.warn(`store.mutations.notes.sortNotebookNotes() No handler for sort [${sort}]`);
+        return;
+      }
+      state.notebookNotes.sort(sortFunction);
+      state.activeNotebookNotesSort = sort;
+    },
+
     setNoteCount(state, count) {
       state.noteCount = count;
       return count;
     },
+
     delete(state, note_id) {
       let i = state.notebookNotes.findIndex(n => n._id == note_id);
       //console.log('store.mutations.notes.delete() note id ['+note_id+'] at index ['+i+']');
@@ -257,6 +370,7 @@ export default {
         throw({message:'Could not find note by id ['+note_id+']'})
       }
     },
+
     deleteAll(state) {
       //console.log('store.mutations.notes.deleteAll()');
       state.notebookNotes = [];

@@ -25,7 +25,7 @@
       </span>
     </nav>
 
-    <div class="content">
+    <div class="content" v-if="!showPhotoViewer">
 
       <header class="main">
         <h2>{{note.name}}</h2>
@@ -65,6 +65,18 @@
 
         <p class="note">{{note.note}}</p>
 
+        <p class="photos" v-for="photo in note.photos">
+          <span v-if="!!photo.name" class="photo-name">{{photo.name}}</span>
+          <img
+            :key="photo.id"
+            :src="photoUrl(photo, 'medium')"
+            class="note-photo"
+            @click="photoSelect(photo)"
+            @error="onPhotoError(photo, $event)"
+            />
+          <span v-if="!!photo.caption" class="photo-caption">{{photo.caption}}</span>
+        </p>
+
       </div>
 
       <gmap-map
@@ -102,6 +114,12 @@
 
     </div>
 
+    <photo-viewer
+      :photo="selectedPhoto"
+      v-if="showPhotoViewer"
+      @close="showPhotoViewer = false"
+    />
+
     <div class="navigation">
       <router-link to="/">Home</router-link>
       &gt;
@@ -137,6 +155,22 @@
       </div>
     </modal-dialog>
 
+    <modal-dialog v-if="showMissingImageModal" @close="showMissingImageModal = false">
+      <h3 slot="header">Missing Image</h3>
+      <div slot="body">
+        No data was found for the selected image. If you believe this image has been removed, select
+        Delete below to remove its reference from this note.
+      </div>
+      <div slot="footer">
+        <button class="modal-optional-button" @click="showMissingImageModal = false">
+          Cancel
+        </button>
+        <button class="modal-default-button" @click="confirmImageDelete()">
+          Delete
+        </button>
+      </div>
+    </modal-dialog>
+
     <div class="loading-mask" v-if="isLoading"><span>{{loadingMessage}}</span></div>
 
   </div>
@@ -144,14 +178,16 @@
 
 <script>
   import ModalDialog from '@/components/ModalDialog'
-  import {GmapMap, GmapMarker} from 'vue2-google-maps'
+  import PhotoViewer from '@/components/PhotoViewer'
+  import { mapGetters } from 'vuex'
+
   // mapGetters was breaking my test so I switched over to using basic computed properties
   //import { mapGetters } from 'vuex'
 
   export default {
 
     components: {
-      ModalDialog
+      ModalDialog, PhotoViewer
     },
 
     computed: {
@@ -183,9 +219,15 @@
         return this.$store.state.notes.activeNote;
       },
 
+      activePhotos() {
+        return this.$store.state.photos.activePhotos;
+      },
+
       notebookNoteCount() {
         return this.$store.state.notes.notebookNotes.length;
       },
+
+      ...mapGetters('photos', ['photoUrl'])
       // Setup getters from store
       //...mapGetters('notes', ['notebookNoteCount'])
     },
@@ -193,16 +235,21 @@
     data() {
       return {
         showConfirmModal: false,
+        showMissingImageModal: false,
         isLoading: false,
         loadingMessage:'Loading...',
         showNoteMap:false,
+        showPhotoViewer:false,
+        selectedPhoto:null,
         infoOptions: {
           pixelOffset: {
             width: 0,
             height: -35
           }
         },
-        infoWinOpen: true
+        infoWinOpen: true,
+        missingImage:null,
+        reloads:[]
       }
     },
 
@@ -233,10 +280,19 @@
     },
 
     mounted() {
-      //console.log(`Note.mounted() notebookNoteCount [${this.$store.state.notes.notebookNoteCount}]`);
+      //console.log(`Note.mounted() $route.path [${this.$route.path}]`);
       if (!this.$store.state.user.userAuthenticating) {
         this.initNote();
       }
+    },
+
+    beforeDestroy() {
+      Object.keys(this.reloads).forEach(key => {
+        // kill any reload timers
+        if (this.reloads[key].timeout) {
+          clearTimeout(this.reloads[key].timeout);
+        }
+      })
     },
 
     methods: {
@@ -248,10 +304,14 @@
           //console.log('Note.initNote() deeplinked');
           this.$store.dispatch('notes/getNote', this.$route.params.note_id)
             .then(() => {
-              this.isLoading = false;
               if (this.$route.name === 'note-map') {
                 this.showNoteMap = true;
               }
+              // load note photos if it has photos
+              this.loadNotePhotos()
+                .then(hasPhotos => {
+                  this.isLoading = false;
+                });
               // load notebook notes for next/previous navigation
               this.$store.dispatch('notes/getNotebookNotes', this.note.notebook)
                 .then(() => {
@@ -261,13 +321,36 @@
             })
             .catch(this.handleError);
         } else {
+          // activeNote has already been set. Check route and for photos
           if (this.$route.name === 'note-map') {
             this.$gmapApiPromiseLazy().then(() => {
               // get a render error if we try to load maps immediately
               this.showNoteMap = true;
             });
           }
-          this.isLoading = false;
+          this.loadNotePhotos()
+            .then(hasPhotos => {
+              this.isLoading = false;
+            });
+        }
+      },
+
+      loadNotePhotos() {
+        //console.log('Note.loadNotePhotos()');
+        if (!!this.activeNote.photos && this.activeNote.photos.length > 0) {
+          if (!this.$store.getters['photos/photosLoaded'](this.activeNote.photos)) {
+            this.loadingMessage = 'Loading photos...';
+            return this.$store.dispatch('photos/getNotePhotos', this.activeNote._id)
+              .then(() => {
+                return Promise.resolve(true)
+              });
+          } else {
+            // photos are already loaded in store
+            return Promise.resolve(true);
+          }
+        } else {
+          // no photos
+          return Promise.resolve(false)
         }
       },
 
@@ -342,9 +425,71 @@
         this.infoWinOpen = !this.infoWinOpen;
       },
 
+      photoSelect(photo) {
+        //console.log('Note.photoSelect()');
+        this.loadingMessage = 'Loading Photo...';
+        this.isLoading = true;
+        this.$store.dispatch('photos/getActivePhoto', {note_id: this.activeNote._id, photo_id: photo.id})
+          .then(photo => {
+            this.isLoading = false;
+            this.$router.push(`${this.$route.path}/photo/${photo.id}`);
+          })
+          .catch(this.handleError);
+        // [TODO] remember scroll state
+      },
+
+      onPhotoError(photo, evnt) {
+        // Sometimes it takes a couple of seconds for a newly uploaded image to respond
+        // get/create a counter reference
+        let reload;
+        if (!this.reloads[photo.id]) {
+          reload = this.reloads[photo.id] = {photo: photo, count: 0, src: evnt.target.src};
+          // [TODO] Need some kind of indicator that photo is loading until we give up
+          evnt.target.style.display = 'none';
+          evnt.target.addEventListener('load', this.onPhotoErrorReload, {once:true});
+        } else {
+          reload = this.reloads[photo.id];
+        }
+        //console.log(`Note.onPhotoError() ${reload.count}`);
+        if (reload.count < 10) {
+          reload.timeout = setTimeout(() => {
+            reload.count++;
+            let reloadUrl = `${reload.src}?reload=${reload.count}`;
+            evnt.target.src = reloadUrl;
+          }, 1000)
+        } else {
+          //console.log(`Note.onPhotoError() Give up reloading ${reload.photo.id}`);
+          evnt.target.style.display = 'none';
+          reload.timeout = null;
+          this.$emit('missingphoto', photo);
+        }
+      },
+
+      onPhotoErrorReload(evnt) {
+        //console.log(`Note.onPhotoErrorReload()`);
+        console.dir(evnt);
+        evnt.target.style.display = 'block';
+      },
+
+      confirmImageDelete() {
+        //console.log('Note.confirmImageDelete()');
+        // If image isn't in photos collection then remove reference from the note.
+        // Could result from a failure to update note after photo doc is deleted.
+        this.$store.dispatch('notes/removeNotePhoto', {note_id: this.activeNote._id, photo_id: this.missingImage[1]})
+          .then(() => {
+            this.showMissingImageModal = true;
+          });
+      },
+
       handleError(err) {
         console.warn('Note.handleError()');
         console.dir(err);
+        this.isLoading = false;
+        if (err.message.startsWith('Failed to get photo by id')) {
+          // show error message
+          this.missingImage = err.message.match(/\[([0-9]+)\]/);
+          this.showMissingImageModal = true;
+        }
       }
 
     }
@@ -353,9 +498,11 @@
 </script>
 
 <style scoped>
+
   .gmap-container {
     height: calc(100% - 50px);
   }
+
   .body {
     height: calc(100% - 50px);
     padding: 0 20px 10px;
@@ -365,15 +512,18 @@
   .body > div {
     margin: 10px 0;
   }
+
   .note-view-map {
     float: right;
     width: 200px;
     height: 150px;
   }
+
   .date, .geocoords, .places {
     float: left;
     clear: left;
   }
+
   .places img {
     vertical-align: middle;
   }
@@ -385,17 +535,40 @@
     white-space: nowrap;
     text-overflow: ellipsis;
   }
+
   .note {
     border: 1px solid transparent;
     white-space: pre-wrap;
     clear: both;
   }
+
   a svg {
     fill: #42b983;
   }
+
   .navigation a {
     display: inline-block;
   }
+
+  .note-photo {
+    display: block;
+    margin: 0 auto;
+  }
+
+  .photo-name {
+    color:#666;
+    width: 100%;
+    display: inline-block;
+    text-align: center;
+  }
+
+  .photo-caption {
+    width: 100%;
+    display: inline-block;
+    margin-top: 8px;
+    padding: 0 40px;
+  }
+
   @media only screen and (min-device-width : 320px) and (max-device-width : 480px) {
     .note-info {
       font-size: 1rem;
@@ -404,4 +577,5 @@
       height: calc(100% - 50px);
     }
   }
+
 </style>

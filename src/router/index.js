@@ -11,6 +11,8 @@ import Notebooks from '../views/Notebooks'
 import Notebook from '../views/Notebook'
 import Note from '../views/Note'
 import NoteEdit from '../views/NoteEdit'
+import Photo from '../views/Photo'
+import PhotoEdit from '../views/PhotoEdit'
 import Verified from '../views/Verified'
 import NavError from '../views/NavError'
 
@@ -126,11 +128,35 @@ const router = new VueRouter({
       meta: {
         requiresLogin:true
       }
-    }
-    ,{
+    },{
       path:'/note-new-mobile/:notebook_id',
       name:'note-new-mobile',
       component: NoteEdit,
+      meta: {
+        requiresLogin:true
+      }
+    },
+    // Photo View
+    {
+      path:'/note/:note_id/photo/:photo_id',
+      name:'note-photo',
+      component: Photo,
+      meta: {
+        requiresLogin:true
+      }
+    },
+    // PhotoEdit View
+    {
+      path:'/note/:note_id/photo-edit/:photo_id',
+      name:'note-photo-edit',
+      component: PhotoEdit,
+      meta: {
+        requiresLogin:true
+      }
+    },{
+      path:'/note-edit/:note_id/photo-edit/:photo_id',
+      name:'note-edit-photo-edit',
+      component: PhotoEdit,
       meta: {
         requiresLogin:true
       }

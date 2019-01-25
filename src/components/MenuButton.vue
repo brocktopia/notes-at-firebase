@@ -16,7 +16,7 @@
         v-for="item in items"
         :key="item.value"
         @click="itemSelect(item)"
-        :class="(item.value === selected) ? 'menu-item selected' : 'menu-item'"
+        :class="(selected.includes(item.value) ? 'menu-item selected' : 'menu-item') + (item.isNew ? ' new-group' : '')"
       >{{item.label}}</span>
     </div>
   </span>
@@ -45,7 +45,7 @@
         type: String,
         default: 'light'
       },
-      selected: String
+      selected: Array
     },
 
     data() {
@@ -90,6 +90,9 @@
       cursor: pointer;
       width: 100%;
     }
+    .menu-item.new-group {
+      border-top: white solid 1px;
+    }
   }
   .theme-dark {
     fill: white;
@@ -109,9 +112,17 @@
       }
     }
     .menu-item {
-      &:hover, &.selected {
+      &:hover {
         background-color: rgba(255,255,255,0.3);
       }
+      &.selected {
+        background-color: rgba(127,127,255,0.2);
+      }
+    }
+  }
+  @media only screen and (min-device-width : 320px) and (max-device-width : 480px) {
+    .menu {
+      min-width: 300px;
     }
   }
 </style>

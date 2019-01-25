@@ -21,7 +21,7 @@
           menu-align="br"
           theme="dark"
           :items="noteMenuItems"
-          :selected="activeView"
+          :selected="noteMenuState"
           @select="onNoteMenuSelect"
         ></menu-button>
       </header>
@@ -35,6 +35,7 @@
             class="note-item"
             @select="noteSelect"
             @mapselect="noteMapSelect"
+            @photoselect="notePhotoSelect"
             :note="note"
           ></note-list-item>
 
@@ -50,6 +51,7 @@
             :key="note._id"
             @select="noteSelect"
             @mapselect="noteMapSelect"
+            @photoselect="notePhotoSelect"
             :note="note"
           ></note-full-item>
 
@@ -139,9 +141,11 @@
         isLoading: false,
         loadingMessage: 'Loading...', // mutable based on async task
         noteMenuItems: [
-          {label:'Show Note List',value:'list'},
-          {label:'Show Note Map',value:'map'},
-          {label:'Show Full Notes',value:'full'}
+          {label:'Show Note List', value:'show-list'},
+          {label:'Show Note Map', value:'show-map'},
+          {label:'Show Full Notes', value:'show-full'},
+          {label:'Sort by Latest', value:'sort-latest', isNew:true},
+          {label:'Sort by Earliest', value:'sort-first'}
         ]
       }
     },
@@ -168,6 +172,10 @@
 
       scrollPosition() {
         return this.$store.state.notebooks.activeNotebookScrollPosition;
+      },
+
+      noteMenuState() {
+        return ['show-' + this.$store.state.notebooks.activeNotebookView, 'sort-' + this.$store.state.notes.activeNotebookNotesSort];
       },
 
       // Setup getters from store
@@ -206,17 +214,22 @@
     },
 
     mounted() {
-      console.log('Notebook.mounted()');
+      //console.log('Notebook.mounted()');
       vm = this;
       if (!vm.$store.state.user.userAuthenticating) {
         vm.getNotebook();
+        // clear any active note or photo data
+        vm.$store.dispatch('notes/clearActiveNote')
+          .catch(vm.handleError);
+        vm.$store.dispatch('photos/clearActivePhotos')
+          .catch(vm.handleError);
       }
     },
 
     methods: {
 
       getNotebook() {
-        console.log(`Notebook.getNotebook() scrollPosition [${vm.scrollPosition}]`);
+        //console.log(`Notebook.getNotebook() scrollPosition [${vm.scrollPosition}]`);
         vm.isLoading = true;
         // Make sure notebooks are loaded in case of deep-linking
         vm.$store.dispatch('notebooks/load')
@@ -302,6 +315,19 @@
           .catch(vm.handleError);
       },
 
+      notePhotoSelect(data) {
+        //console.log(`Notebook.notePhotoSelect() note [${ data.note_id}] photo [${data.photo_id}]`);
+        vm.recordScrollPosition();
+        vm.$store.dispatch('notes/setActiveNote', data.note_id)
+          .then(() => {
+            vm.$store.dispatch('photos/getActivePhoto', data)
+              .then(() => {
+                vm.$router.push('/note/' + data.note_id + '/photo/' + data.photo_id);
+              })
+          })
+          .catch(vm.handleError);
+      },
+
       /* These methods were deprecated when component was decomposed but I may want to add
          edit functionality into the note list at some point
       editNote: function () {
@@ -328,7 +354,7 @@
         //console.log('Notebook.addNoteMobile()');
         vm.recordScrollPosition();
         vm.$store.dispatch('notes/createActiveNote', vm.$route.params.notebook_id)
-          .then(function() {
+          .then(() => {
             vm.$router.push('/note-new-mobile/' + vm.notebook._id);
           })
           .catch(vm.handleError)
@@ -337,7 +363,14 @@
       // Notebook methods
       onNoteMenuSelect(item) {
         //console.log(`Notebook.onNoteMenuSelect() ${item}`);
-        vm.$router.push('/notebook/' + vm.notebook._id + '/' + item);
+        let val;
+        if (item.startsWith('show')) {
+          val = item.slice(5);
+          vm.$router.push('/notebook/' + vm.notebook._id + '/' + val);
+        } else if (item.startsWith('sort')) {
+          val = item.slice(5);
+          vm.$store.commit('notes/sortNotebookNotes', val);
+        }
       },
 
       editNotebook() {
@@ -370,15 +403,20 @@
 
       confirmDelete() {
         //console.log('Notebook.confirmDelete()');
-        vm.loadingMessage = 'Removing Notebook...';
+        vm.loadingMessage = 'Removing Notebook Notes...';
         vm.isLoading = true;
-        vm.$store.dispatch('notebooks/delete', vm.notebook._id)
-          .then(function() {
-            vm.showConfirmModal = false;
-            vm.isLoading = false;
-            vm.$router.replace('/notebooks');
-          })
-          .catch(vm.handleError);
+        vm.$store.dispatch('notes/deleteNotebookNotes')
+          .then(resp => {
+            //giconsole.log(`'Notebook.confirmDelete() resp ${resp}`);
+            vm.loadingMessage = 'Removing Notebook...';
+            vm.$store.dispatch('notebooks/delete', vm.notebook._id)
+              .then(function() {
+                vm.showConfirmModal = false;
+                vm.isLoading = false;
+                vm.$router.replace('/notebooks');
+              })
+              .catch(vm.handleError);
+          });
       },
 
       handleError(err) {

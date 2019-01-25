@@ -6,7 +6,7 @@
 </template>
 
 <script>
-  var vm;
+  let vm;
   export default {
 
     name: 'app',
@@ -30,6 +30,7 @@
             // update store with user data
             this.$store.dispatch('user/loginUser', user)
               .then(() => {
+                // route user to home view from /login or /signup
                 if (this.$route.path === '/login' || this.$route.path === '/signup') {
                   this.$router.push('/');
                 }
@@ -43,6 +44,7 @@
           // User logged out
           this.$store.dispatch('user/setUserStatus', false)
             .then(() => {
+              // move user to /login if they are in view that requires login status
               if (this.$route.meta.requiresLogin) {
                 this.$router.push('/login');
               }
@@ -51,7 +53,7 @@
             .catch(vm.handleError)
         }
       });
-      // initialize firestore-disable depricated features
+      // initialize firestore-disable deprecated features
       let db = vm.$firebase.firestore();
       db.settings({
         timestampsInSnapshots: true
@@ -92,5 +94,6 @@
         vm.isLoading = false;
       }
     }
+
   }
 </script>
