@@ -246,6 +246,7 @@
     margin-top: 8px;
   }
   input#photo {
+    margin-top: 5px;
     font-size: 1em;
     width: 380px !important;
   }

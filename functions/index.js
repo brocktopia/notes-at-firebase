@@ -19,7 +19,7 @@ exports.onFileCreated = functions.storage
       //console.log(`onFileCreated() skip processing file [${filePath}]`);
       return false;
     }
-    //console.log('onFileCreated() v.0.2 resize function execution started...');
+    //console.log('onFileCreated() v.0.3 resize function execution started...');
     //console.log(object);
     const bucket = object.bucket;
     const destBucket = gcs.bucket(bucket);
@@ -31,7 +31,7 @@ exports.onFileCreated = functions.storage
         const tmpFilePath = path.join(workingDir, path.basename(filePath));
         return destBucket.file(filePath).download({destination: tmpFilePath})
           .then(() => {
-            console.log('onFileCreated() source file copied to working directory');
+            //console.log('onFileCreated() source file copied to working directory');
             // resize images
             const extName = path.extname(tmpFilePath);
             //const fileName = path.basename(tmpFilePath, extName);
@@ -42,27 +42,32 @@ exports.onFileCreated = functions.storage
             const reducedPath = path.join(workingDir, reducedName);
             const fullName = 'gcphoto-' + fileName + '-1200px' + extName;
             const fullPath = path.join(workingDir, fullName);
-            return Promise.all([
-              sharp(tmpFilePath).resize(90, 90).toFile(thumbnailPath),
-              sharp(tmpFilePath).withMetadata().resize(600, 600, {fit:'inside'}).toFile(reducedPath),
-              sharp(tmpFilePath).withMetadata().resize(1200, 1200, {fit:'inside', withoutEnlargement: true}).toFile(fullPath)
-            ]).then(() => {
-              //console.log('onFileCreated() photos resized > move to /images/ directory');
-              return Promise.all([
-                destBucket.upload(thumbnailPath, {destination: 'images/' + thumbnailName}),
-                destBucket.upload(reducedPath, {destination: 'images/' + reducedName}),
-                destBucket.upload(fullPath, {destination: 'images/' + fullName})
-              ]).then(() => {
-                //console.log('onFileCreated() photos copied to image directory');
+            const rotatePath = path.join(workingDir, fileName + '-rotate' + extName);
+            // rotate() without parameter will rotate to exif orientation
+            return sharp(tmpFilePath).rotate().toFile(rotatePath)
+              .then(() => {
                 return Promise.all([
-                  remove(workingDir),
-                  destBucket.file(filePath).delete()
+                  sharp(rotatePath).resize(90, 90).toFile(thumbnailPath),
+                  sharp(rotatePath).withMetadata().resize(600, 600, {fit:'inside'}).toFile(reducedPath),
+                  sharp(rotatePath).withMetadata().resize(1200, 1200, {fit:'inside', withoutEnlargement: true}).toFile(fullPath)
                 ]).then(() => {
-                  //console.log('onFileCreated() directories and files cleaned up--image generation complete');
-                  return Promise.resolve(true);
+                  //console.log('onFileCreated() photos resized > move to /images/ directory');
+                  return Promise.all([
+                    destBucket.upload(thumbnailPath, {destination: 'images/' + thumbnailName}),
+                    destBucket.upload(reducedPath, {destination: 'images/' + reducedName}),
+                    destBucket.upload(fullPath, {destination: 'images/' + fullName})
+                  ]).then(() => {
+                    //console.log('onFileCreated() photos copied to image directory');
+                    return Promise.all([
+                      remove(workingDir),
+                      destBucket.file(filePath).delete()
+                    ]).then(() => {
+                      //console.log('onFileCreated() directories and files cleaned up--image generation complete');
+                      return Promise.resolve(true);
+                    });
+                  });
                 });
-              });
-            });
+              })
           })
       })
       .catch(err => {
