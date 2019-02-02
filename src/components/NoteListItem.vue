@@ -19,7 +19,7 @@
     <span class="note">{{(note.note && note.note.length > 84) ? note.note.substr(0,84) + '...' : note.note}}</span>
 
     <photo-scroller
-      v-if="!!note.photos"
+      v-if="!!note.photos && note.photos.length > 0"
       :photos="note.photos"
       @select="photoSelect"
     />

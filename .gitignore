@@ -1,6 +1,9 @@
 # Artwork
 art/
 
+# notes
+settings.txt
+
 # Webstorm
 .idea/
 
