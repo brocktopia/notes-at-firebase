@@ -454,7 +454,13 @@
             vm.$router.push('/note/' + vm.activeNote._id);
           }
         } else {
-          vm.$router.push('/note/' + vm.activeNote._id);
+          //vm.$router.push('/note/' + vm.activeNote._id);
+          // Go back to notebook if user came here from notebook
+          if (closeRoute.includes('notebook')) {
+            vm.$router.replace(closeRoute);
+          } else {
+            vm.$router.replace('/note/' + vm.activeNote._id);
+          }
         }
       },
 

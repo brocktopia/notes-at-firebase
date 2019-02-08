@@ -8,8 +8,12 @@
           <svg><use xlink:href="dist/symbols.svg#delete-note"><title>Delete Notebook</title></use></svg>
         </button>
         <button class="icon edit-notebook" @click="editNotebook()"><svg><use xlink:href="dist/symbols.svg#edit-note"><title>Edit Notebook</title></use></svg></button>
-        <button class="desktop-only icon add-note" @click="addNote('desktop')"><svg><use xlink:href="dist/symbols.svg#add-note"><title>Add New Note</title></use></svg></button>
-        <button class="mobile-only icon" @click="addNoteMobile()"><svg><use xlink:href="dist/symbols.svg#add-note"><title>Add New Note</title></use></svg></button>
+        <button class="desktop-only icon add-note" @click="addNote('desktop')">
+          <svg><use xlink:href="dist/symbols.svg#add-note"><title>Add New Note</title></use></svg>
+        </button>
+        <button class="mobile-only icon" @click="addNote('mobile')">
+          <svg><use xlink:href="dist/symbols.svg#add-note"><title>Add New Note</title></use></svg>
+        </button>
       </span>
     </nav>
 
@@ -340,22 +344,16 @@
       },
       */
 
-      addNote() {
-        //console.log('Notebook.addNote()');
-        vm.recordScrollPosition();
-        vm.$store.dispatch('notes/createActiveNote', vm.$route.params.notebook_id)
-          .then(function() {
-            vm.$router.push('/note-new/' + vm.notebook._id);
-          })
-          .catch(vm.handleError)
-      },
-
-      addNoteMobile() {
-        //console.log('Notebook.addNoteMobile()');
+      addNote(mode) {
+        //console.log(`Notebook.addNote() mode ${mode}`);
         vm.recordScrollPosition();
         vm.$store.dispatch('notes/createActiveNote', vm.$route.params.notebook_id)
           .then(() => {
-            vm.$router.push('/note-new-mobile/' + vm.notebook._id);
+            if (mode === 'desktop') {
+              vm.$router.push('/note-new/' + vm.notebook._id);
+            } else {
+              vm.$router.push('/note-new-mobile/' + vm.notebook._id);
+            }
           })
           .catch(vm.handleError)
       },

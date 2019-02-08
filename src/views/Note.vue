@@ -19,6 +19,12 @@
         <button v-if="showNoteMap === false" class="icon show-map" @click="showMap()"><svg><use xlink:href="dist/symbols.svg#map">
           <title>Show Map</title>
         </use></svg></button>
+        <button class="desktop-only icon add-note" @click="addNote('desktop')"><svg><use xlink:href="dist/symbols.svg#add-note">
+          <title>Add New Note</title>
+        </use></svg></button>
+        <button class="mobile-only icon" @click="addNote('mobile')"><svg><use xlink:href="dist/symbols.svg#add-note">
+          <title>Add New Note</title>
+        </use></svg></button>
         <button class="icon close-note" @click="closeNote()"><svg><use xlink:href="dist/symbols.svg#close-note">
           <title>Close Note</title>
         </use></svg></button>
@@ -479,6 +485,19 @@
           .then(() => {
             this.showMissingImageModal = true;
           });
+      },
+
+      addNote(mode) {
+        //console.log(`Note.addNote() mode ${mode}`);
+        this.$store.dispatch('notes/createActiveNote', this.note.notebook)
+          .then(() => {
+            if (mode === 'desktop') {
+              this.$router.push('/note-new/' + this.note.notebook);
+            } else {
+              this.$router.push('/note-mobile-new/' + this.note.notebook);
+            }
+          })
+          .catch(this.handleError)
       },
 
       handleError(err) {
