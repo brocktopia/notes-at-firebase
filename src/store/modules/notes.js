@@ -179,6 +179,7 @@ export default {
                 let noteData = Object.assign({'_id':docSnapshot.id}, docSnapshot.data());
                 commit('addNotebookNote', noteData);
                 commit('updateActiveNote', noteData);
+                commit('sortNotebookNotes', state.activeNotebookNotesSort);
                 return Promise.resolve(state.activeNote);
               })
               .catch(err => {throw(err)})
@@ -197,7 +198,8 @@ export default {
         .then(() => {
           return noteRef.get()
             .then((docSnapshot) => {
-              commit('updateActiveNote', Object.assign({'_id':docSnapshot.id}, docSnapshot.data()))
+              commit('updateActiveNote', Object.assign({'_id':docSnapshot.id}, docSnapshot.data()));
+              commit('sortNotebookNotes', state.activeNotebookNotesSort);
               return Promise.resolve(state.activeNote);
             })
             .catch(err => {throw(err)})
@@ -315,11 +317,7 @@ export default {
     },
 
     addNotebookNote(state, note) {
-      if (state.activeNotebookNotesSort === 'latest') {
-        state.notebookNotes.unshift(note);
-      } else if (state.activeNotebookNotesSort === 'first') {
-        state.notebookNotes.push(note);
-      }
+      state.notebookNotes.push(note);
     },
 
     updateActiveNote(state, note) {

@@ -96,7 +96,7 @@
         >
         <span class="button-bar" v-if="photoselected">
             <button class="small" @click="$emit('clearphotos')">Clear</button>
-            <button v-if="mode !== 'save'" class="small" @click="$emit('uploadphotos')">Upload</button>
+            <button v-if="mode !== 'new'" class="small" @click="$emit('uploadphotos')">Upload</button>
           </span>
       </div>
 
