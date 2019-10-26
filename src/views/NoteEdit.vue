@@ -102,6 +102,8 @@
     <photo-viewer
       v-if="showPreviewPhoto"
       :path="selectedPreview.path"
+      :removable="true"
+      @remove="removePreviewPhoto"
       @close="showPreviewPhoto = false"
     />
 
@@ -434,7 +436,8 @@
         //console.log(`NoteEdit.savePhotos()`);
         vm.isLoading = true;
         vm.loadingMessage = 'Saving Photos...';
-        return vm.$store.dispatch('photos/addPhotos', {files:this.imageInput.files, note_id: vm.activeNote._id})
+        //return vm.$store.dispatch('photos/addPhotos', {files:this.imageInput.files, note_id: vm.activeNote._id})
+        return vm.$store.dispatch('photos/addPhotos', {files:this.photoFileList, note_id: vm.activeNote._id})
           .then((results) => {
             vm.loadingMessage = 'Updating Note...';
             // update notes photos array with photo data
@@ -448,7 +451,7 @@
         //console.log(`NoteEdit.afterSaveNote()`);
         vm.isLoading = false;
         if (vm.mode === 'edit') {
-          if (closeRoute.includes(vm.activeNote._id)) {
+          if (closeRoute && closeRoute.includes(vm.activeNote._id)) {
             vm.$router.push(closeRoute);
           } else {
             vm.$router.push('/note/' + vm.activeNote._id);
@@ -456,7 +459,7 @@
         } else {
           //vm.$router.push('/note/' + vm.activeNote._id);
           // Go back to notebook if user came here from notebook
-          if (closeRoute.includes('notebook')) {
+          if (closeRoute && closeRoute.includes('notebook')) {
             vm.$router.replace(closeRoute);
           } else {
             vm.$router.replace('/note/' + vm.activeNote._id);
@@ -625,14 +628,13 @@
 
       onPhotosSelect(evnt) {
         //console.log(`NoteEditor.onPhotosSelect() photos ${evnt.target.files.length}`);
-        this.photoFileList = evnt.target.files;
+        this.photoFileList = Array.from(evnt.target.files);
         this.imageInput = evnt.target;
         this.isPhotoSelected = this.photoFileList.length > 0;
         this.photoPreviews = [];
         this.photoExifs = [];
         if (this.isPhotoSelected  && !!window.URL) {
-          const files = Array.from(this.photoFileList);
-          files.forEach((photo, index) => {
+          this.photoFileList.forEach((photo, index) => {
             let img = {
               path: window.URL.createObjectURL(photo),
               name: photo.name,
@@ -672,6 +674,14 @@
         //console.log(`NoteEditor.onPhotoPreviewClick() path [${preview.path}] ${typeof(preview.path)}`);
         this.selectedPreview = preview;
         this.showPreviewPhoto = true;
+      },
+
+      removePreviewPhoto() {
+        //console.log(`NoteEditor.removePreviewPhoto() remove file at index ${this.selectedPreview.index}`);
+        // This removes the image from photoFileList but the FileList object can't be edited so the input will still show the old file count
+        this.photoFileList.splice(this.selectedPreview.index, 1);
+        this.photoPreviews.splice(this.selectedPreview.index, 1);
+        this.showPreviewPhoto = false;
       },
 
       onPhotoExif(data, preview) {

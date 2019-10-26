@@ -4,6 +4,7 @@
         :src="path"
         @click="photoClick"
       />
+      <button class="remove-btn" v-if="removable" @click="onRemove">Remove</button>
     </div>
 </template>
 
@@ -13,7 +14,11 @@
       name: "PhotoViewer",
 
       props: {
-        path: String
+        path: String,
+        removable: {
+          type: Boolean,
+          defaultValue: false
+        }
       },
 
       data() {
@@ -25,6 +30,11 @@
         photoClick() {
           //console.log('PhotoViewer.photoClick()');
           this.$emit('close');
+        },
+
+        onRemove() {
+          //console.log('PhotoViewer.onRemove()');
+          this.$emit('remove');
         }
 
       }
@@ -38,6 +48,12 @@
     width: 100%;
     height: 100%;
     background-color: black;
+  }
+
+  .remove-btn {
+    position: absolute;
+    top: 10px;
+    right: 10px;
   }
 
   div img {

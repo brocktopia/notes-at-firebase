@@ -22,7 +22,6 @@
               <button class="modal-default-button" @click="$emit('close')">
                 OK
               </button>
-              <br/><br/>
             </slot>
             <slot v-if="modalType === 'confirm'" name="footer">
               <button class="modal-default-button" @click="$emit('close')">
@@ -31,7 +30,6 @@
               <button class="modal-default-button" @click="$emit('confirm')">
                 Confirm
               </button>
-              <br/><br/>
             </slot>
             <slot v-if="modalType === 'yesno'" name="footer">
               <button class="modal-default-button" @click="$emit('confirm')">
@@ -40,8 +38,8 @@
               <button class="modal-default-button" @click="$emit('close')">
                 No
               </button>
-              <br/><br/>
             </slot>
+            <br/><br/>
           </div>
 
         </div>

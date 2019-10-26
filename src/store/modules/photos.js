@@ -62,7 +62,7 @@ export default {
   actions: {
 
     addPhotos({commit, state, getters}, {files, note_id}) {
-      files = Array.from(files);
+      //files = Array.from(files);
       //console.log(`store.actions.photos.addPhotos() save [${files.length}] photos to note [${note_id}]`);
       // first load photo to storage
       const storageRef = this.$fbstoreage.ref();

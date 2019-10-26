@@ -100,16 +100,13 @@
       },
 
       mapCenter() {
-        console.log('ExifViewer.computed.mapCenter');
+        //console.log('ExifViewer.computed.mapCenter');
         if (!this.exifs || !this.map) return {'lat':0, 'lng':0};
         let bounds = this.viewerMapBounds;
-        console.log('ExifViewer.computed.mapCenter mapCenter:');
         if (bounds) {
-          console.dir(bounds.getCenter().toJSON());
           return bounds.getCenter().toJSON();
         } else {
           let geo = this.exifs[0].geocode;
-          console.dir(geo);
           return {'lat':geo.latitude, 'lng': geo.longitude};
         }
       },

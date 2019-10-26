@@ -55,9 +55,6 @@
       });
       // initialize firestore-disable deprecated features
       let db = vm.$firebase.firestore();
-      db.settings({
-        timestampsInSnapshots: true
-      });
       // Register ServiceWorks
       if ('serviceWorker' in navigator && !this.isDevMode) {
         //console.log(`App.mounted() Let's register some service workers!`);

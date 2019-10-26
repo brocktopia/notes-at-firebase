@@ -24,13 +24,21 @@
 
     <div class="content">
 
-      <img
-        class="photo"
-        :alt="activePhoto.caption"
-        :src="activePhoto.full"
-        @click="showFullSize = true"
-      />
-      
+      <header class="main">
+        <h2>{{activePhoto.name}}</h2>
+      </header>
+
+      <div class="body">
+        <img
+          class="photo"
+          :alt="activePhoto.caption"
+          :src="activePhoto.full"
+          @click="showFullSize = true"
+        />
+        <p v-if="!!activePhoto.caption" class="photo-caption">{{activePhoto.caption}}</p>
+      </div>
+
+
       <div v-if="showFullSize" class="photo-fullsize">
         <img
           class="photo-fullsize"
@@ -40,9 +48,6 @@
         />
       </div>
 
-      <p class="photo-name">{{activePhoto.name}}</p>
-
-      <p class="photo-caption">{{activePhoto.caption}}</p>
 
     </div>
 
@@ -248,13 +253,19 @@
 
 <style lang="scss" scoped>
 
-  .photo {
-    width: 100%;
+  header.main h2 {
+    font-size: 1.2em;
   }
 
-  .photo-name {
-    font-weight: bold;
-    padding: 0 20px;
+  .body {
+    height: calc(100% - 50px);
+    padding: 0;
+    overflow-y: auto;
+    overflow-x: hidden;
+  }
+
+  .photo {
+    width: 100%;
   }
 
   .photo-caption {

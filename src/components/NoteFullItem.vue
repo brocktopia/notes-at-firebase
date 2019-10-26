@@ -39,6 +39,7 @@
         <img
           :key="photo.id"
           :src="photoUrl(photo, 'medium')"
+          @error="onPhotoError(photo, $event)"
           class="note-photo"
           @click="photoSelect(photo)"
         />
@@ -99,7 +100,10 @@
     },
 
     data() {
-      return {}
+      return {
+        reloads: {},
+        reloadMax: 20
+      }
     },
 
     methods:{
@@ -113,6 +117,39 @@
         //console.log(`NoteListItem.photoSelect() note [${this.note._id}] photo [${photo.id}]`);
         const data = {note_id: this.note._id, photo_id: photo.id};
         this.$emit('photoselect', data);
+      },
+
+      onPhotoError(photo, evnt) {
+        // Sometimes it takes a couple of seconds for a newly uploaded image to respond
+        // get/create a counter reference
+        let reload;
+        if (!this.reloads[photo.id]) {
+          console.log(`NoteListItem.onPhotoError() photo id ${photo.id}`);
+          reload = this.reloads[photo.id] = {photo: photo, count: 0, src: evnt.target.src};
+          evnt.target.style.display = 'none';
+          evnt.target.addEventListener('load', this.onPhotoErrorReload, {once:true});
+        } else {
+          reload = this.reloads[photo.id];
+        }
+        //console.log(`PhotoScroller.onPhotoError() ${reload.count}`);
+        if (reload.count < this.reloadMax) {
+          reload.timeout = setTimeout(() => {
+            reload.count++;
+            console.log(`NoteListItem.onPhotoError() reload [${reload.count}] of photo ${photo.id}`);
+            let reloadUrl = `${reload.src}?reload=${reload.count}`;
+            //console.log(`PhotoScroller.onPhotoError() reload ${reloadUrl}`);
+            evnt.target.src = reloadUrl;
+          }, 1000)
+        } else {
+          //console.log(`PhotoScroller.onPhotoError() Give up reloading ${reload.photo.id}`);
+          reload.timeout = null;
+          this.$emit('missingphoto', photo);
+        }
+      },
+
+      onPhotoErrorReload(evnt) {
+        //console.log(`PhotoScroller.onPhotoErrorReload()`);
+        evnt.target.style.display = 'block';
       },
 
       mapSelect() {
