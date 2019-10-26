@@ -132,7 +132,7 @@ Firestore database.
 * Add ability to save note data offline using IndexedDB and have it sync when online.
 
 ## Live Application
-The app is now live on Firebase here: [notes-at.firebaseapp.com](https://notes-at.firebaseapp.com)
+The app is now live on Firebase here: [notes-at.web.app](https://notes-at.web.app)
 
 ## Author
 Brock Henderson [@brocktopia](https://github.com/brocktopia/) ||
