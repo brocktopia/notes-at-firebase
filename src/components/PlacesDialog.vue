@@ -12,7 +12,7 @@
         <div class="modal-body">
           <input v-model="place.name" placeholder="Enter a place name" @input="updatePlaceSearch(place.name)">
           <ul class="place-list">
-            <li class="place" v-for="place in places" v-on:click="$emit('select', place)">
+            <li class="place" v-for="place in places" :key=place.id v-on:click="$emit('select', place)">
               <img :src="place.icon" />
               <span class="place-name">{{place.name}}</span>
               <!-- The place-type value can get really long

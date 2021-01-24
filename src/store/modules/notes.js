@@ -22,6 +22,7 @@ export default {
   state: {
     all:[],
     notebookNotes:[],
+    publishedNotes:[],
     activeNote:{},
     noteCount:NaN,
     activeNotebookNotesSort:'latest'
@@ -100,7 +101,7 @@ export default {
     },
 
     setActiveNote({commit, state}, note_id) {
-      //console.log('store.actions.notes.setActiveNote() note ['+note_id+']');
+      console.log('store.notes.actions.setActiveNote() note ['+note_id+']');
       let note = state.notebookNotes.find(n => n._id == note_id);
       //console.dir(note);
       if (note) {
@@ -169,14 +170,17 @@ export default {
     },
 
     saveActiveNote({commit, state}, note) { // Create new note
-      //console.log('store.actions.notes.saveActiveNote()');
+      console.log('store.actions.notes.saveActiveNote()');
+      console.dir(note);
       let noteRef = this.$fbdb.collection('users').doc(this.state.user.user.uid).collection('notes');
       return noteRef.add(note)
         .then((doc) => {
           if (doc.id) {
             return doc.get()
               .then((docSnapshot) => {
-                let noteData = Object.assign({'_id':docSnapshot.id}, docSnapshot.data());
+                let noteData = Object.assign({ '_id': docSnapshot.id }, docSnapshot.data());
+                console.log(`store.actions.notes.saveActiveNote() created`);
+                console.dir(noteData);
                 commit('addNotebookNote', noteData);
                 commit('updateActiveNote', noteData);
                 commit('sortNotebookNotes', state.activeNotebookNotesSort);
@@ -204,7 +208,7 @@ export default {
             })
             .catch(err => {throw(err)})
         })
-        .catch(err => {throw(err)})
+        .catch(err => {throw(err)}) 
     },
 
     updateNotePhotos({commit, state}, note) {
@@ -296,6 +300,11 @@ export default {
               return commit('deleteAll');
             })
         })
+    },
+
+    setPublishdedNotes({commit}, notes) {
+      console.log('store.actions.notes.setPublishdedNotes()');
+      commit('setPublishedNotes', notes);
     }
   },
 
@@ -314,6 +323,12 @@ export default {
       //console.log('store.mutations.notes.setNotebookNotes()');
       //console.dir(notes);
       state.notebookNotes = notes;
+    },
+
+    setPublishedNotes(state, notes) {
+      console.log('store.mutations.notes.setPublishedNotes()');
+      //console.dir(notes);
+      state.publishedNotes = notes;
     },
 
     addNotebookNote(state, note) {
@@ -372,6 +387,7 @@ export default {
     deleteAll(state) {
       //console.log('store.mutations.notes.deleteAll()');
       state.notebookNotes = [];
+      state.publishedNotes = [];
       state.notes = [];
       state.notesCount = 0;
       state.activeNote = null;

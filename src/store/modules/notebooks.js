@@ -94,6 +94,22 @@ export default {
         .catch(err => {throw(err)})
     },
 
+    publishNotebook({commit, state}, notebook) {
+      console.log('store.actions.notebooks.publishNotebook()');
+      let notebookRef = this.$fbdb.collection('users').doc(this.state.user.user.uid).collection('notebooks').doc(notebook._id);
+      return notebookRef.set(notebook)
+        .then(() => {
+          return notebookRef.get()
+            .then((docSnapshot) => {
+              return commit('updateNotebook', Object.assign({'_id':docSnapshot.id}, docSnapshot.data()))
+            })
+            .catch(err => {throw(err)})
+            // Create or update publication
+            
+        })
+        .catch(err => {throw(err)})
+    },
+
     delete({commit}, notebook_id) {
       //console.log('store.actions.notebooks.delete() ['+notebook_id+']');
       let notebookRef = this.$fbdb.collection('users').doc(this.state.user.user.uid).collection('notebooks').doc(notebook_id);

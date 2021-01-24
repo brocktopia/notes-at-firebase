@@ -1,9 +1,12 @@
 <template>
   <div class="app-container" id="navError">
 
-    <header>
-      <h2>Page Note Found</h2>
-    </header>
+    <nav class="head">
+      <h2>Page Not Found</h2>
+      <span class="button-bar">
+        
+      </span>
+    </nav>
 
     <div class="content">
       <p>The page you're looking for can not be found.</p>
@@ -13,6 +16,7 @@
     <div class="navigation">
       <router-link to="/">Home</router-link>
       <router-link to="/notebooks">Notebooks</router-link>
+      <router-link to="/explore">Explore</router-link>
     </div>
 
   </div>

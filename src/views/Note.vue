@@ -4,13 +4,13 @@
     <nav class="head">
       <h2>Note</h2>
       <span class="button-bar">
-        <button class="icon delete-note" @click="deleteNote()"><svg><use xlink:href="dist/symbols.svg#delete-note">
+        <button v-if="isEditable" class="icon delete-note" @click="deleteNote()"><svg><use xlink:href="dist/symbols.svg#delete-note">
           <title>Delete Note</title>
         </use></svg></button>
-        <button class="desktop-only icon edit-note" @click="editNote()"><svg><use xlink:href="dist/symbols.svg#edit-note">
+        <button v-if="isEditable" class="desktop-only icon edit-note" @click="editNote()"><svg><use xlink:href="dist/symbols.svg#edit-note">
           <title>Edit Note</title>
         </use></svg></button>
-        <button class="mobile-only icon edit-note" @click="editNoteMobile()"><svg><use xlink:href="dist/symbols.svg#edit-note">
+        <button v-if="isEditable" class="mobile-only icon edit-note" @click="editNoteMobile()"><svg><use xlink:href="dist/symbols.svg#edit-note">
           <title>Edit Note</title>
         </use></svg></button>
         <button v-if="showNoteMap" class="icon show-note" @click="showNote()"><svg><use xlink:href="dist/symbols.svg#note">
@@ -19,10 +19,10 @@
         <button v-if="showNoteMap === false" class="icon show-map" @click="showMap()"><svg><use xlink:href="dist/symbols.svg#map">
           <title>Show Map</title>
         </use></svg></button>
-        <button class="desktop-only icon add-note" @click="addNote('desktop')"><svg><use xlink:href="dist/symbols.svg#add-note">
+        <button v-if="isEditable" class="desktop-only icon add-note" @click="addNote('desktop')"><svg><use xlink:href="dist/symbols.svg#add-note">
           <title>Add New Note</title>
         </use></svg></button>
-        <button class="mobile-only icon" @click="addNote('mobile')"><svg><use xlink:href="dist/symbols.svg#add-note">
+        <button v-if="isEditable" class="mobile-only icon" @click="addNote('mobile')"><svg><use xlink:href="dist/symbols.svg#add-note">
           <title>Add New Note</title>
         </use></svg></button>
         <button class="icon close-note" @click="closeNote()"><svg><use xlink:href="dist/symbols.svg#close-note">
@@ -71,7 +71,7 @@
 
         <p class="note">{{note.note}}</p>
 
-        <p class="photos" v-for="photo in note.photos">
+        <p class="photos" v-for="photo in note.photos" :key="photo.id">
           <span v-if="!!photo.name" class="photo-name">{{photo.name}}</span>
           <img
             :key="photo.id"
@@ -129,7 +129,8 @@
     <div class="navigation">
       <router-link to="/">Home</router-link>
       &gt;
-      <router-link class="notebooks-link" to="/notebooks">Notebooks</router-link>
+      <router-link v-if="isEditable" class="notebooks-link" to="/notebooks">Notebooks</router-link>
+      <router-link v-if="!isEditable" class="explore-link" to="/explore">Explore</router-link>
       &gt;
       <a @click="closeNote()" class="back2notebook">Notebook</a>
       <span v-if="notebookNoteCount > 1" class="icon-button-bar">
@@ -244,6 +245,7 @@
         showMissingImageModal: false,
         isLoading: false,
         loadingMessage:'Loading...',
+        isEditable:false,
         showNoteMap:false,
         showPhotoViewer:false,
         selectedPhoto:null,
@@ -261,7 +263,7 @@
 
     watch: {
       $route(toRoute, fromRoute) {
-        //console.log(`Note.watch.$route() toRoute [${toRoute.name}] fromRoute [${fromRoute.name}] path [${toRoute.path}] note_id [${toRoute.params.note_id}]`);
+        console.log(`Note.watch.$route() toRoute [${toRoute.name}] fromRoute [${fromRoute.name}] path [${toRoute.path}] note_id [${toRoute.params.note_id}]`);
         // watch for id changes
         if ((this.note && toRoute.params.note_id) && this.note._id !== toRoute.params.note_id) {
           // handle browser navigation
@@ -286,7 +288,14 @@
     },
 
     mounted() {
-      //console.log(`Note.mounted() $route.path [${this.$route.path}]`);
+      console.log(`Note.mounted() $route.path [${this.$route.path}]`);
+      console.dir(this.$route);
+      // distinguish between editable and published
+      if (this.$route.name == 'published-note') {
+        this.isEditable = false;
+      } else {
+        this.isEditable = true;
+      }
       if (!this.$store.state.user.userAuthenticating) {
         this.initNote();
       }
@@ -371,8 +380,14 @@
       },
 
       closeNote() {
-        //console.log(`Note.closeNote()`);
-        this.$router.push('/notebook/' + this.note.notebook);
+        console.log(`Note.closeNote() isEditable [${this.isEditable}]`);
+        if (this.isEditable) {
+          this.$router.push(`/notebook/${this.note.notebook}`);
+        }
+        else {
+        console.log(`Note.closeNote() note.published_id [${this.note.published_id}]`);
+          this.$router.push(`/published/${this.note.published_id}`);
+        }
       },
 
       nextNote() {

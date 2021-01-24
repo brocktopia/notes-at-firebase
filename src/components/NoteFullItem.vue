@@ -34,7 +34,7 @@
 
       <p class="note">{{note.note}}</p>
 
-      <p class="photos" v-for="photo in note.photos">
+      <p class="photos" v-for="photo in note.photos" :key="photo._id">
         <span v-if="!!photo.name" class="photo-name">{{photo.name}}</span>
         <img
           :key="photo.id"

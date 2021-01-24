@@ -2,22 +2,35 @@ service cloud.firestore {
   match /databases/{database}/documents {
     match /users/{userId} {
       allow read: if isSignedIn();
-      allow write: if isOwner(userId)
+      allow write: if isOwner(userId);
     }
     match /users/{userId}/notebooks/{notebookId} {
       allow read: if isSignedIn();
-      allow write: if isOwner(userId)
+      allow write: if isOwner(userId);
     }
     match /users/{userId}/notes/{noteId} {
       allow read: if isSignedIn();
-      allow write: if isOwner(userId)
+      allow write: if isOwner(userId);
     }
     match /users/{userId}/notes/{noteId}/photos/{photoId} {
       allow read: if isSignedIn();
-      allow write: if isOwner(userId)
+      allow write: if isOwner(userId);
+    }
+    match /published/{publishedId} {
+      allow read: if isSignedIn();
+      allow write: if isOwner(userId);
+    }
+    match /published/{publishedId}/notes/{noteId} {
+      allow read: if isSignedIn();
+      allow write: if isOwner(userId);
     }
 
     /// Functions ///
+
+    function isNotBlocked() {
+      // is there anything in auth that can be flagged?
+      return true;
+    }
 
     function isSignedIn() {
       return request.auth != null;

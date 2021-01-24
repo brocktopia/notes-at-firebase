@@ -8,7 +8,7 @@
     <div class="content">
       <img class="logo" src="../assets/logo.png" width="180" height="40" />
       <form @submit.prevent="signIn">
-        <p class="msg">Sign into your accout.</p>
+        <p class="msg">Sign into your account.</p>
         <p class="error-msg" v-if="errors.length">
           <b>Please correct the following issue(s):</b>
           <ul>

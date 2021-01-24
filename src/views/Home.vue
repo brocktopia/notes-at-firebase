@@ -21,8 +21,12 @@
         The location will be stored as geolocation coordinates and can be associated with a place on Google Maps.
         You can organized notes into notebooks which can be viewed as a list or as points on a map.
       </p>
+
       <p>To get started create a new notebook now.</p>
       <button class="single-large" @click="createNewNotebook()">Create a Notebook</button>
+
+      <p>See what other users are doing with <b>notes<span class="at-char">@</span></b>. Explore public notebooks published by other and get inspired.</p>
+      <button class="single-large" @click="gotoExplore()">Explore notes@</button>
     </div>
 
     <div class="navigation">
@@ -45,7 +49,11 @@
     methods: {
       createNewNotebook() {
         //console.log('Home.createNewNotebook()');
-        this.$router.push('/notebooks/new')
+        this.$router.push('/notebooks/new');
+      },
+      gotoExplore() {
+        console.log('Home.createNewNotebook()');
+        this.$router.push('/explore');
       },
       signOut() {
         //console.log('Home.signOut()');

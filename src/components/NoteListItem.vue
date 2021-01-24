@@ -47,7 +47,7 @@
     methods:{
 
       itemSelect() {
-        // console.log(`NoteListItem.itemSelect()`);
+        console.log(`NoteListItem.itemSelect()`);
         this.$emit('select', this.note);
       },
 

@@ -5,6 +5,7 @@
         @click="photoClick"
       />
       <button class="remove-btn" v-if="removable" @click="onRemove">Remove</button>
+      <button class="rotate-btn" v-if="removable" @click="onRotate">Rotate</button>
     </div>
 </template>
 
@@ -15,6 +16,7 @@
 
       props: {
         path: String,
+        photodata: Object,
         removable: {
           type: Boolean,
           defaultValue: false
@@ -35,6 +37,12 @@
         onRemove() {
           //console.log('PhotoViewer.onRemove()');
           this.$emit('remove');
+        },
+
+        onRotate() {
+          console.log('PhotoViewer.onRotate()');
+          console.dir(this.photodata);
+          this.$emit('rotate');
         }
 
       }
@@ -53,6 +61,12 @@
   .remove-btn {
     position: absolute;
     top: 10px;
+    right: 10px;
+  }
+
+  .rotate-btn {
+    position: absolute;
+    top: 60px;
     right: 10px;
   }
 

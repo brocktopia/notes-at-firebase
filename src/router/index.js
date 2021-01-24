@@ -6,6 +6,8 @@ import store from '../store'
 import Login from '../views/Login'
 import SignUp from '../views/SignUp'
 import Home from '../views/Home'
+import Explore from '../views/Explore'
+import Published from '../views/Published'
 import Settings from '../views/Settings'
 import Notebooks from '../views/Notebooks'
 import Notebook from '../views/Notebook'
@@ -40,25 +42,55 @@ const router = new VueRouter({
       meta: {
         requiresLogin:true
       }
-    }
+    },
+    // Explore Component
+    {
+      path:'/explore',
+      name:'explore',
+      component: Explore,
+      meta: {
+        requiresLogin:true
+      }
+    },
+    {
+      path:'/published/:publish_id/(list)?',
+      name:'published',
+      component: Published
+    },
+    {
+      path:'/published/:publish_id/map',
+      name:'published',
+      component: Published
+    },
+    {
+      path:'/published/:publish_id/full',
+      name:'published',
+      component: Published
+    },
+    {
+      path:'/published/note/:note_id',
+      name:'published-note',
+      component: Note
+    },
     // Settings
-    ,{
+    {
       path:'/settings',
       name:'settings',
       component: Settings,
       meta: {
         requiresLogin:true
       }
-    }
+    },
     // Notebooks Component
-    ,{
+    {
       path:'/notebooks',
       name:'notebooks',
       component: Notebooks,
       meta: {
         requiresLogin:true
       }
-    },{
+    },
+    {
       path:'/notebooks/new',
       name:'notebooks-new',
       component: Notebooks,
@@ -74,14 +106,16 @@ const router = new VueRouter({
       meta: {
         requiresLogin:true
       }
-    },{
+    },
+    {
       path:'/notebook/:notebook_id/map',
       name:'notebook-map',
       component: Notebook,
       meta: {
         requiresLogin:true
       }
-    },{
+    },
+    {
       path:'/notebook/:notebook_id/full',
       name:'notebook-full',
       component: Notebook,
@@ -114,21 +148,24 @@ const router = new VueRouter({
       meta: {
         requiresLogin:true
       }
-    },{
+    },
+    {
       path:'/note-new/:notebook_id',
       name:'note-new',
       component: NoteEdit,
       meta: {
         requiresLogin:true
       }
-    },{
+    },
+    {
       path:'/note-edit-mobile/:note_id',
       name:'note-edit-mobile',
       component: NoteEdit,
       meta: {
         requiresLogin:true
       }
-    },{
+    },
+    {
       path:'/note-new-mobile/:notebook_id',
       name:'note-new-mobile',
       component: NoteEdit,
@@ -153,30 +190,32 @@ const router = new VueRouter({
       meta: {
         requiresLogin:true
       }
-    },{
+    },
+    {
       path:'/note-edit/:note_id/photo-edit/:photo_id',
       name:'note-edit-photo-edit',
       component: PhotoEdit,
       meta: {
         requiresLogin:true
       }
-    }
+    },
     // Email Verification
-    ,{
+    {
       path:'/verified',
       name:'verified',
       component: Verified
-    }
+    },
     // NavError Component
-    ,{
+    {
       path:'*',
       name:'404',
       component: NavError
     }
   ],
 
+  /* Resovled using store rather than router
   scrollBehavior (toRoute, fromRoute, savedPosition) {
-    // return desired position--not currently working because whole view must scroll
+    // return desired position--Need reference to the scroll container
     //console.log('router.scrollBehavior() to ['+toRoute.name+'] from ['+fromRoute.name+'] savedPosition ['+savedPosition+']');
     if (savedPosition) {
       return savedPosition
@@ -184,6 +223,7 @@ const router = new VueRouter({
       return { x: 0, y: 0 }
     }
   }
+  */
 
 });
 

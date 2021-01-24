@@ -5,6 +5,7 @@ import notebooks from './modules/notebooks'
 import notes from './modules/notes'
 import user from './modules/user'
 import photos from './modules/photos'
+import published from './modules/published'
 import ui from './modules/ui'
 
 Vue.use(Vuex);
@@ -15,7 +16,6 @@ Vuex.Store.prototype.$fbstoreage = firebase.storage();
 
 // store reference to local storage for data
 
-
 // Create Store
 
 export default new Vuex.Store({
@@ -25,6 +25,7 @@ export default new Vuex.Store({
     notes,
     user,
     photos,
+    published,
     ui
   }
 })

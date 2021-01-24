@@ -102,6 +102,7 @@
     <photo-viewer
       v-if="showPreviewPhoto"
       :path="selectedPreview.path"
+      :photodata="selectedPreview"
       :removable="true"
       @remove="removePreviewPhoto"
       @close="showPreviewPhoto = false"
@@ -251,7 +252,7 @@
         return !!this.note.name && !!this.note.note && this.note.name.length > 0 && this.note.note.length > 0;
       },
 
-      activeNote: function() {
+      activeNote() {
         return this.$store.state.notes.activeNote;
       },
 
@@ -263,7 +264,7 @@
         return this.$store.state.photos.activePhotos;
       },
 
-      notebookNoteCount: function() {
+      notebookNoteCount() {
         return this.$store.state.notes.notebookNoteCount;
       },
 
@@ -638,6 +639,7 @@
             let img = {
               path: window.URL.createObjectURL(photo),
               name: photo.name,
+              data: photo,
               index: index
             };
             this.photoPreviews.push(img)
@@ -671,7 +673,8 @@
       },
 
       onPhotoPreviewClick(preview) {
-        //console.log(`NoteEditor.onPhotoPreviewClick() path [${preview.path}] ${typeof(preview.path)}`);
+        console.log(`NoteEditor.onPhotoPreviewClick() path [${preview.path}] ${typeof(preview.path)}`);
+        console.dir(preview);
         this.selectedPreview = preview;
         this.showPreviewPhoto = true;
       },
@@ -685,7 +688,8 @@
       },
 
       onPhotoExif(data, preview) {
-        //console.log(`NoteEditor.onPhotoExif() [${preview.path}]`);
+        console.log(`NoteEditor.onPhotoExif() [${preview.path}]`);
+        console.dir(data);
         if (this.photoExifs.findIndex(exif => exif.index === preview.index) === -1) {
           this.photoExifs.push(Object.assign({}, data, preview));
           clearTimeout(this.exifDelayTimer);

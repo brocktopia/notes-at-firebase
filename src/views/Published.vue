@@ -2,23 +2,9 @@
   <div class="app-container">
 
     <nav class="head">
-      <h2>Notebook</h2>
+      <h2>Explore - Notebook</h2>
       <span class="button-bar">
-        <button class="icon delete-notebook" @click="deleteNotebook()">
-          <svg><use xlink:href="dist/symbols.svg#delete-note"><title>Delete Notebook</title></use></svg>
-        </button>
-        <button class="icon publish-notebook" @click="publishNotebook()">
-          <svg><use xlink:href="dist/symbols.svg#publish"><title>Publish Notebook</title></use></svg>
-        </button>
-        <button class="icon edit-notebook" @click="editNotebook()">
-          <svg><use xlink:href="dist/symbols.svg#edit-note"><title>Edit Notebook</title></use></svg>
-        </button>
-        <button class="desktop-only icon add-note" @click="addNote('desktop')">
-          <svg><use xlink:href="dist/symbols.svg#add-note"><title>Add New Note</title></use></svg>
-        </button>
-        <button class="mobile-only icon" @click="addNote('mobile')">
-          <svg><use xlink:href="dist/symbols.svg#add-note"><title>Add New Note</title></use></svg>
-        </button>
+        
       </span>
     </nav>
 
@@ -84,38 +70,8 @@
     <div class="navigation">
       <router-link to="/">Home</router-link>
       &gt;
-      <router-link class="notebooks-link" to="/notebooks">Notebooks</router-link>
+      <router-link class="notebooks-link" to="/explore">Explore</router-link>
     </div>
-
-    <edit-notebook-dialog
-      v-if="showEditNotebook"
-      @close="showEditNotebook = false"
-      :mode="'edit'"
-      :notebookSource="notebook"
-      v-on:save="saveNotebook"
-    ></edit-notebook-dialog>
-
-    <publish-notebook-dialog
-      v-if="showPublishNotebook"
-      @close="showPublishNotebook = false"
-      @publish="exportNotebook"
-    ></publish-notebook-dialog>
-
-    <modal-dialog
-      v-if="showConfirmModal"
-      @close="showConfirmModal = false"
-    >
-      <h3 class="warn" slot="header">Confirm Notebook Delete</h3>
-      <div slot="body">Are you sure you want to delete this notebook? <span v-html="notebookDeleteMsg"></span> This can not be undone.</div>
-      <div slot="footer">
-        <button class="modal-optional-button" @click="cancelDelete()">
-          Cancel
-        </button>
-        <button class="modal-default-button" @click="confirmDelete()">
-          Confirm
-        </button>
-      </div>
-    </modal-dialog>
 
     <modal-dialog v-if="showMessage" @close="showMessage = false">
       <h3 :class="messageClass" slot="header">{{messageTitle}}</h3>
@@ -129,8 +85,6 @@
 
 <script>
   import ModalDialog from '@/components/ModalDialog'
-  import EditNotebookDialog from '@/components/EditNotebookDialog'
-  import PublishNotebookDialog from '@/components/PublishNotebookDialog'
   import NotebookMap from '@/components/NotebookMap'
   import NoteListItem from '@/components/NoteListItem'
   import NoteFullItem from '@/components/NoteFullItem'
@@ -141,7 +95,7 @@
   export default {
 
     components: {
-      ModalDialog, EditNotebookDialog, PublishNotebookDialog, NotebookMap, NoteListItem, MenuButton, NoteFullItem
+      ModalDialog, NotebookMap, NoteListItem, MenuButton, NoteFullItem
     },
 
     data() {
@@ -151,10 +105,6 @@
         messageClass: 'notify',
         messageTitle: '',
         messageBody: '',
-        noteEditMode: '', // edit | new
-        showConfirmModal: false,
-        showEditNotebook: false,
-        showPublishNotebook: false,
         isLoading: false,
         loadingMessage: 'Loading...', // mutable based on async task
         noteMenuItems: [
@@ -169,30 +119,25 @@
 
     computed: {
 
-      notebookDeleteMsg() { // Present note count to user on notebook delete
-        let notes = vm.notes;
-        return (notes.length > 0 ? '<b style="color:darkred;">All ' + (notes.length > 2 ? notes.length : '') + ' notes</b> in this notebook will be deleted. ' : '')
-      },
-
       // Could create getters for these but leaving it to illustrate it as possibility
-      notebook() {
-        return this.$store.state.notebooks.activeNotebook
+      notebook: function () {
+        return this.$store.state.published.activePublication
       },
 
-      notes() {
-        return this.$store.state.notes.notebookNotes
+      notes: function () {
+        return this.$store.state.published.activePublishedNotes
       },
 
       activeView() {
-        return this.$store.state.notebooks.activeNotebookView;
+        return this.$store.state.published.activePublishedView;
       },
 
       scrollPosition() {
-        return this.$store.state.notebooks.activeNotebookScrollPosition;
+        return this.$store.state.published.activePublishedScrollPosition;
       },
 
       noteMenuState() {
-        return ['show-' + this.$store.state.notebooks.activeNotebookView, 'sort-' + this.$store.state.notes.activeNotebookNotesSort];
+        return ['show-' + this.$store.state.published.activePublishedView, 'sort-' + this.$store.state.published.activePublishedSort];
       },
 
       // Setup getters from store
@@ -202,27 +147,27 @@
     watch: {
 
       $route(toRoute, fromRoute) {
-        //console.log('Notebook.$route() toRoute [' + toRoute.name + '] fromRoute [' + fromRoute.name + '] path [' + toRoute.path + ']');
+        //console.log('Published.$route() toRoute [' + toRoute.name + '] fromRoute [' + fromRoute.name + '] path [' + toRoute.path + ']');
         if (toRoute.name === 'notebook-list') { // notebook home
-          vm.$store.commit('notebooks/setNotebookView', 'list');
+          vm.$store.commit('published/setPublishedView', 'list');
         }
         else if (toRoute.name === 'notebook-map') { // notebook map
-          vm.$store.commit('notebooks/setNotebookView', 'map');
+          vm.$store.commit('published/setPublishedView', 'map');
         }
-        else if (toRoute.name === 'notebook-full') { // notebook map
-          vm.$store.commit('notebooks/setNotebookView', 'full');
+        else if (toRoute.name === 'notebook-full') { // notebook full
+          vm.$store.commit('published/setPublishedView', 'full');
         }
         else {
-          console.warn('Notebook.$route() Unhandled route [' + toRoute.path + ']');
+          console.warn('Published.$route() Unhandled route [' + toRoute.path + ']');
           //console.dir(toRoute);
           return;
         }
-        vm.$store.dispatch('notes/clearActiveNote')
+        vm.$store.dispatch('published/clearActiveNote')
           .catch(vm.handleError);
       },
 
       '$store.state.user.userAuthenticating': (val, oldVal) => {
-        //console.log(`Notebook.watch($store.state.user.userAuthenticating) val [${val}] oldVal [${oldVal}]`);
+        //console.log(`Published.watch($store.state.user.userAuthenticating) val [${val}] oldVal [${oldVal}]`);
         if (!val && !!vm.$store.state.user.user.uid) {
           vm.getNotebook();
         }
@@ -231,35 +176,35 @@
     },
 
     mounted() {
-      //console.log('Notebook.mounted()');
+      //console.log('Published.mounted()');
       vm = this;
-      if (!vm.$store.state.user.userAuthenticating) {
-        vm.getNotebook();
+      if (!this.$store.state.user.userAuthenticating) {
+        this.getNotebook();
         // clear any active note or photo data
-        vm.$store.dispatch('notes/clearActiveNote')
-          .catch(vm.handleError);
-        vm.$store.dispatch('photos/clearActivePhotos')
-          .catch(vm.handleError);
+        this.$store.dispatch('published/clearActiveNote')
+          .catch(this.handleError);
+        this.$store.dispatch('photos/clearActivePhotos')
+          .catch(this.handleError);
       }
     },
 
     methods: {
 
       getNotebook() {
-        //console.log(`Notebook.getNotebook() scrollPosition [${vm.scrollPosition}]`);
+        //console.log(`Published.getNotebook() scrollPosition [${vm.scrollPosition}]`);
         vm.isLoading = true;
         // Make sure notebooks are loaded in case of deep-linking
-        vm.$store.dispatch('notebooks/load')
+        vm.$store.dispatch('published/load')
           .then(() => {
             // Get Notebook
-            vm.$store.dispatch('notebooks/getNotebook', vm.$route.params.notebook_id)
+            vm.$store.dispatch('published/getPublication', vm.$route.params.publish_id)
               .then(() => {
 
                 // Get Notebook Notes
-                vm.$store.dispatch('notes/getNotebookNotes', vm.$route.params.notebook_id)
+                vm.$store.dispatch('published/getPublicationNotes', vm.$route.params.publish_id)
                   .then(() => {
-
-                    // Check route info to see determine display mode
+                    console.log(`Published.getNotebook() load [${this.notes.length}] notes in view [${this.activeView}]`);
+                    /* Check route info to see determine display mode
                     if (vm.$route.name === 'notebook-map') {
                       // Notebook Map
                       vm.$store.commit('notebooks/setNotebookView', 'map');
@@ -272,10 +217,11 @@
                     } else if (vm.activeView === 'full') {
                       vm.$router.replace(`/notebook/${vm.notebook._id}/full`);
                     }
+                    */
 
                     // check scroll state
                     if (vm.scrollPosition > 0) {
-                      //console.log(`Notebook.mounted() set scroll position to [${vm.scrollPosition}]`);
+                      //console.log(`Published.mounted() set scroll position to [${vm.scrollPosition}]`);
                       const body = this.$el.querySelector('.notebook-body');
                       if (body) {
                         body.scrollTop = vm.scrollPosition;
@@ -285,6 +231,8 @@
                     // Finished
                     vm.isLoading = false;
                   })
+                    // Finished
+                    vm.isLoading = false;
               })
           })
           .catch(vm.handleError);
@@ -293,8 +241,8 @@
       // Utility methods
       setActiveNote(note_id) {
         if (!vm.activeNote || vm.activeNote._id != note_id) {
-          //console.log('Notebook.setActiveNote() for ' + note_id);
-          vm.$store.dispatch('notes/setActiveNote', note_id)
+          console.log('Published.setActiveNote() for ' + note_id);
+          vm.$store.dispatch('published/setActivePublishedNote', note_id)
             .catch(vm.handleError);
         }
         // Wasn't async before--probably need to remove this functionality or make it promise-based
@@ -302,154 +250,64 @@
       },
 
       recordScrollPosition(clearPosition) {
-        //console.log('Notebook.recordScrollPosition()');
+        console.log('Published.recordScrollPosition()');
         const body = this.$el.querySelector('.notebook-body');
         if (body) {
-          //console.log(`Notebook.recordScrollPosition() scrollTop [${body.scrollTop}]`);
+          console.log(`Published.noteSelect() scrollTop [${body.scrollTop}]`);
           const position = clearPosition ? 0 : body.scrollTop;
-          vm.$store.commit('notebooks/setScrollPosition', position);
+          vm.$store.commit('published/setScrollPosition', position);
         }
       },
 
       // Note interactions
       noteSelect(note) {
-        //console.log('Notebook.noteSelect() '+note._id);
+        console.log('Published.noteSelect() '+note._id);
         vm.recordScrollPosition();
-        vm.$store.dispatch('notes/setActiveNote', note._id)
+        vm.$store.dispatch('published/setActivePublishedNote', note._id)
           .then(function() {
-            vm.$router.push('/note/' + note._id);
+            vm.$router.push('/published/note/' + note._id);
           })
           .catch(vm.handleError);
       },
 
       noteMapSelect(note) {
-        console.log('Notebook.noteMapSelect() '+note._id);
+        console.log('Published.noteMapSelect() '+note._id);
         vm.recordScrollPosition();
-        vm.$store.dispatch('notes/setActiveNote', note._id)
+        vm.$store.dispatch('published/setActivePublishedNote', note._id)
           .then(function() {
-            vm.$router.push('/note/' + note._id + '/map');
+            vm.$router.push('/published/note/' + note._id + '/map');
           })
           .catch(vm.handleError);
       },
 
       notePhotoSelect(data) {
-        //console.log(`Notebook.notePhotoSelect() note [${ data.note_id}] photo [${data.photo_id}]`);
+        //console.log(`Published.notePhotoSelect() note [${ data.note_id}] photo [${data.photo_id}]`);
         vm.recordScrollPosition();
-        vm.$store.dispatch('notes/setActiveNote', data.note_id)
+        vm.$store.dispatch('published/setActivePublishedNote', data.note_id)
           .then(() => {
             vm.$store.dispatch('photos/getActivePhoto', data)
               .then(() => {
-                vm.$router.push('/note/' + data.note_id + '/photo/' + data.photo_id);
+                vm.$router.push('/published/note/' + data.note_id + '/photo/' + data.photo_id);
               })
           })
           .catch(vm.handleError);
-      },
-
-      /* These methods were deprecated when component was decomposed but I may want to add
-         edit functionality into the note list at some point
-      editNote: function () {
-        //console.log('Notebook.editNote()');
-        vm.$router.push('/note-edit/' + vm.activeNote._id);
-      },
-      editNoteMobile: function () {
-        //console.log('Notebook.editNoteMobile()');
-        vm.$router.push('/note-edit-mobile/' + vm.activeNote._id);
-      },
-      */
-
-      addNote(mode) {
-        //console.log(`Notebook.addNote() mode ${mode}`);
-        vm.recordScrollPosition();
-        vm.$store.dispatch('notes/createActiveNote', vm.$route.params.notebook_id)
-          .then(() => {
-            if (mode === 'desktop') {
-              vm.$router.push('/note-new/' + vm.notebook._id);
-            } else {
-              vm.$router.push('/note-new-mobile/' + vm.notebook._id);
-            }
-          })
-          .catch(vm.handleError)
       },
 
       // Notebook methods
       onNoteMenuSelect(item) {
-        //console.log(`Notebook.onNoteMenuSelect() ${item}`);
+        //console.log(`Published.onNoteMenuSelect() ${item}`);
         let val;
         if (item.startsWith('show')) {
           val = item.slice(5);
-          vm.$router.push('/notebook/' + vm.notebook._id + '/' + val);
+          vm.$router.push('/published/' + this.notebook.id + '/' + val);
         } else if (item.startsWith('sort')) {
           val = item.slice(5);
-          vm.$store.commit('notes/sortNotebookNotes', val);
+          vm.$store.commit('published/sortNotebookNotes', val);
         }
       },
 
-      editNotebook() {
-        //console.log('Notebook.editNotebook()');
-        vm.showEditNotebook = true;
-      },
-
-      saveNotebook(notebook) {
-        //console.log('Notebook.saveNotebook()');
-        vm.loadingMessage = 'Saving...';
-        vm.isLoading = true;
-        // this method currently not needing to create new notebook
-        vm.$store.dispatch('notebooks/updateNotebook', notebook)
-          .then(function () {
-            vm.isLoading = false;
-            vm.showEditNotebook = false;
-          })
-          .catch(vm.handleError);
-      },
-
-      publishNotebook() {
-        console.log('Notebook.publishNotebook()');
-        vm.showPublishNotebook = true;
-      },
-
-      exportNotebook() {
-        console.log('Notebook.exportNotebook()');
-        vm.loadingMessage = 'Publishing...';
-        vm.isLoading = true;
-        // update lastPublished
-        notebook.lastPublished = new Date();
-        vm.$store.dispatch('notebooks/exportNotebook', notebook)
-          .then(() => {
-            vm.isLoading = false;
-            vm.showPublishNotebook = false;
-          })
-      },
-
-      deleteNotebook() {
-        //console.log('Notebook.deleteNotebook()');
-        vm.showConfirmModal = true;
-      },
-
-      cancelDelete() {
-        //console.log('Notebook.cancelDelete()');
-        vm.showConfirmModal = false;
-      },
-
-      confirmDelete() {
-        //console.log('Notebook.confirmDelete()');
-        vm.loadingMessage = 'Removing Notebook Notes...';
-        vm.isLoading = true;
-        vm.$store.dispatch('notes/deleteNotebookNotes')
-          .then(resp => {
-            //giconsole.log(`'Notebook.confirmDelete() resp ${resp}`);
-            vm.loadingMessage = 'Removing Notebook...';
-            vm.$store.dispatch('notebooks/delete', vm.notebook._id)
-              .then(function() {
-                vm.showConfirmModal = false;
-                vm.isLoading = false;
-                vm.$router.replace('/notebooks');
-              })
-              .catch(vm.handleError);
-          });
-      },
-
       handleError(err) {
-        console.warn('Notebook.handleError()');
+        console.warn('Published.handleError()');
         console.dir(err);
         vm.isLoading = false;
         vm.messageClass = 'warn';
