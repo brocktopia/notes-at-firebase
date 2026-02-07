@@ -49,7 +49,7 @@
     "vue-loader": "^17.4.2",
     "vue-server-renderer": "^2.6.11",
     "vue-template-compiler": "^2.6.11",
-    "webpack": "^5.98.0",
+    "webpack": "^5.104.1",
     "webpack-cli": "^3.3.12",
     "webpack-dev-server": "^5.2.1"
   },
